@@ -20,6 +20,7 @@ pub async fn ping(data: web::Data<AppState>) -> impl Responder {
     let ping_amount = 5u64;
     let _data = IgnoreValue;
 
+    // mby unlock if failure ?
     // access both interactor and state through the mutable borrow
     let response = contract_interact
         .interactor

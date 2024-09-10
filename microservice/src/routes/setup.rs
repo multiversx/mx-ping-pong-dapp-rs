@@ -19,8 +19,8 @@ pub async fn setup_contract(data: web::Data<AppState>) -> impl Responder {
     let wallet_address = contract_interact.wallet_address.clone();
 
     let ping_amount = RustBigUint::from(5u128);
-    let duration_in_seconds = 10u64;
-    let opt_activation_timestamp = Option::Some(0u64);
+    let duration_in_seconds = 30u64;
+    let opt_activation_timestamp: Option<u64> = None;
     let max_funds = OptionalValue::Some(RustBigUint::from(100_000u128));
 
     // access both interactor and state through the mutable borrow
