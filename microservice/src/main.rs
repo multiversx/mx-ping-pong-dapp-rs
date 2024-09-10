@@ -1,4 +1,5 @@
 use actix_web::{web, App, HttpServer};
+use routes::{query_configuration, tx_configuration};
 use std::sync::{Arc, RwLock};
 mod shared_state;
 pub use shared_state::AppState;
@@ -15,9 +16,9 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(AppState {
                 interactor: shared_interactor.clone(),
             }))
-            .service(routes::query::get_deadline)
             .service(routes::setup::setup_contract)
-            .service(routes::transaction::ping)
+            .service(web::scope("/query").configure(query_configuration))
+            .service(web::scope("/tx").configure(tx_configuration))
     })
     .bind("127.0.0.1:8084")?
     .run()

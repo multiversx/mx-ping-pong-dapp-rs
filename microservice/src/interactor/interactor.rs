@@ -64,7 +64,7 @@ impl ContractInteract {
         let wallet_address = interactor.register_wallet(test_wallets::alice());
 
         let contract_code = BytesValue::interpret_from(
-            "mxsc:src/shared_state/ping-pong-egld.mxsc.json",
+            "mxsc:microservice/src/shared_state/ping-pong-egld.mxsc.json",
             &InterpreterContext::default(),
         );
 
