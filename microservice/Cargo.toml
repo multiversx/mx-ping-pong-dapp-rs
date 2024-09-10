@@ -1,0 +1,13 @@
+[package]
+name = "microservice"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4.9.0"
+
+[dependencies.multiversx-sc-snippets]
+version = "0.53.0"
+
+[dependencies.interactor]
+path = "src/interactor"
