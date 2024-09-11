@@ -1,3 +1,4 @@
+use actix_cors::Cors;
 use actix_web::{web, App, HttpServer};
 use std::sync::{Arc, RwLock};
 mod shared_state;
@@ -15,11 +16,18 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(AppState {
                 interactor: shared_interactor.clone(),
             }))
+            .wrap(
+                Cors::default()
+                    .allow_any_origin()
+                    .allow_any_method()
+                    .allow_any_header()
+                    .supports_credentials(),
+            )
             .service(routes::query::get_deadline)
             .service(routes::setup::setup_contract)
             .service(routes::transaction::ping)
     })
-    .bind("127.0.0.1:8084")?
+    .bind("127.0.0.1:8088")?
     .run()
     .await
 }
