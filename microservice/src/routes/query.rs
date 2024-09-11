@@ -3,7 +3,11 @@ use imports::{Bech32Address, ReturnsResultUnmanaged};
 use redis::{AsyncCommands, Client, RedisError};
 use serde_json::json;
 
-use crate::routes::{proxy, query_models::*};
+use crate::routes::{
+    helpers::{nominated_str, readable_timestamp},
+    proxy,
+    query_models::*,
+};
 use crate::shared_state::AppState;
 use multiversx_sc_snippets::*;
 
@@ -140,11 +144,12 @@ pub async fn get_ping_amount(
                 .run()
                 .await;
 
+            let nominated_result_value = nominated_str(result_value);
             let _: () = con
-                .set("ping_amount", &result_value.to_string())
+                .set("ping_amount", &nominated_result_value)
                 .await
                 .unwrap();
-            QueryResponse::new(result_value.to_string()).response()
+            QueryResponse::new(nominated_result_value).response()
         }
     }
 }
@@ -190,10 +195,11 @@ pub async fn get_max_funds(
 
             match result_value {
                 Some(value) => {
-                    let _: () = con.set("max_funds", &value.to_string()).await.unwrap();
-                    QueryResponse::new(value.to_string()).response()
+                    let nominated_result_value = nominated_str(value);
+                    let _: () = con.set("max_funds", &nominated_result_value).await.unwrap();
+                    QueryResponse::new(nominated_result_value).response()
                 }
-                None => QueryResponse::new("Max funds not set!".to_string()).response(),
+                None => QueryResponse::new("Max funds limit not set".to_string()).response(),
             }
         }
     }

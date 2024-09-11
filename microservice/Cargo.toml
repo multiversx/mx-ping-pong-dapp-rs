@@ -12,6 +12,7 @@ redis = { version = "0.26.1", features = ["async-std-comp"] }
 futures = "0.3.30"
 async-std = "1.13.0"
 chrono = "0.4.38"
+tokio = "1.40.0"
 
 [dependencies.multiversx-sc-snippets]
 version = "0.53.0"
