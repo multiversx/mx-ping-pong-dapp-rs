@@ -1,7 +1,7 @@
 use actix_web::{get, web, Responder};
 use imports::ReturnsResultUnmanaged;
 
-use crate::routes::proxy;
+use crate::routes::{query_models::*,proxy};
 use crate::shared_state::AppState;
 use multiversx_sc_snippets::*;
 

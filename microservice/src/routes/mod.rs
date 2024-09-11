@@ -2,6 +2,8 @@ pub mod proxy;
 pub mod query;
 pub mod setup;
 pub mod transaction;
+pub mod tx_models;
+pub mod query_models;
 
 #[allow(unused)]
 pub use proxy::*;

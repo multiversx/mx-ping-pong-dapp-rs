@@ -2,12 +2,15 @@ use actix_web::{post, web, Responder};
 use imports::{bech32, Bech32Address, OptionalValue, ReturnsNewAddress, RustBigUint};
 
 use crate::routes::proxy;
+use crate::routes::tx_models::*;
 use crate::shared_state::AppState;
 use multiversx_sc_snippets::*;
 
 #[post("/setup")]
-pub async fn setup_contract(data: web::Data<AppState>) -> impl Responder {
-    // get a mutable lock on the contract_interact (entire struct)
+pub async fn setup_contract(
+    data: web::Data<AppState>,
+    body: web::Json<DeployReqBody>,
+) -> impl Responder {
     let mut contract_interact = match data.interactor.write() {
         Ok(lock) => lock,
         Err(poisoned) => {
@@ -15,15 +18,18 @@ pub async fn setup_contract(data: web::Data<AppState>) -> impl Responder {
             return format!("Failed to acquire lock: {:?}", poisoned);
         }
     };
+
+    let (amount, max_funds, _activation_timestamp, duration, deployer) =
+        body.get_tx_sending_values();
+
     let contract_code = contract_interact.contract_code.clone();
-    let wallet_address = contract_interact.wallet_address.clone();
+    let wallet_address = Bech32Address::from_bech32_string(deployer);
 
-    let ping_amount = RustBigUint::from(5u128);
-    let duration_in_seconds = 30u64;
+    let ping_amount = RustBigUint::from(amount);
+    let duration_in_seconds = duration;
     let opt_activation_timestamp: Option<u64> = None;
-    let max_funds = OptionalValue::Some(RustBigUint::from(100_000u128));
+    let max_funds = OptionalValue::Some(RustBigUint::from(max_funds));
 
-    // access both interactor and state through the mutable borrow
     let new_address = contract_interact
         .interactor
         .tx()
@@ -41,6 +47,7 @@ pub async fn setup_contract(data: web::Data<AppState>) -> impl Responder {
         .prepare_async()
         .run()
         .await;
+
     let new_address_bech32 = bech32::encode(&new_address);
     contract_interact
         .state
