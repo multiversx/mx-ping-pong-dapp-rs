@@ -1,12 +1,17 @@
 use actix_web::{post, web, Responder};
 use imports::{Bech32Address, IgnoreValue, ReturnsRawResult};
+use redis::{AsyncCommands, Client};
 
-use crate::routes::{tx_models::*, proxy};
+use crate::routes::{proxy, tx_models::*};
 use crate::shared_state::AppState;
 use multiversx_sc_snippets::*;
 
 #[post("/ping")]
-pub async fn ping(data: web::Data<AppState>, body: web::Json<PingReqBody>) -> impl Responder {
+pub async fn ping(
+    data: web::Data<AppState>,
+    body: web::Json<PingReqBody>,
+    redis_client: web::Data<Client>,
+) -> impl Responder {
     // get a mutable lock on the contract_interact (entire struct)
     let mut contract_interact = match data.interactor.write() {
         Ok(lock) => lock,
@@ -38,6 +43,13 @@ pub async fn ping(data: web::Data<AppState>, body: web::Json<PingReqBody>) -> im
         .prepare_async()
         .run()
         .await;
+
+    let mut con = redis_client
+        .get_multiplexed_async_connection()
+        .await
+        .unwrap();
+
+    let _: () = con.del("user_addresses").await.unwrap();
 
     format!(
         "successfully pinged with amount {:#?}: {:?}",

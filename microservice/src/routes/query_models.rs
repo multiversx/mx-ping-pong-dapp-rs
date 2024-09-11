@@ -1,9 +1,16 @@
 use actix_web::HttpResponse;
+use chrono::{DateTime, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
+
+pub fn readable_timestamp(timestamp: u64) -> String {
+    let datetime =
+        DateTime::from_timestamp(timestamp as i64, 0).expect("Failed to parse timestamp");
+    datetime.to_string()
+}
 
 #[derive(Deserialize, Serialize)]
 pub struct QueryResponse {
-    response: String
+    response: String,
 }
 
 impl QueryResponse {
@@ -18,7 +25,7 @@ impl QueryResponse {
 
 #[derive(Deserialize, Serialize)]
 pub struct QueryArrayResponse {
-    response: Vec<String>
+    response: Vec<String>,
 }
 
 impl QueryArrayResponse {
