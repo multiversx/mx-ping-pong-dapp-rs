@@ -1,5 +1,5 @@
 use actix_web::{get, web, Responder};
-use imports::ReturnsResultUnmanaged;
+use imports::{Bech32Address, ReturnsResultUnmanaged};
 use interactor::ContractInteract;
 
 use crate::routes::proxy;
@@ -97,7 +97,13 @@ pub async fn get_user_addresses() -> impl Responder {
         .run()
         .await;
 
-    format!("Result: {result_value:?}")
+        let addresses: Vec<String> = result_value
+        .iter()
+        .map(|address| Bech32Address::from(address).to_string())
+        .collect();
+
+    // Return the addresses wrapped in a JSON response
+    web::Json(Query { addresses })
 }
 
 pub fn query_configuration(cfg: &mut web::ServiceConfig) {

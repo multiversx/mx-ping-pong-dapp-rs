@@ -4,7 +4,7 @@ use yew::prelude::*;
 use crate::{
     components::Button,
     context::ConfigContext,
-    requests::{query, transaction},
+    requests::{query, transaction, QueryType},
 };
 
 #[function_component(AdminPanel)]
@@ -17,21 +17,65 @@ pub fn admin_panel() -> Html {
     let query_service = {
         let config = Rc::clone(&context.config);
         let set_deadline = context.set_deadline.clone();
+        let set_timestamp = context.set_timestamp.clone();
+        let set_max_funds = context.set_max_funds.clone();
+        let set_ping_amount = context.set_ping_amount.clone();
+        //let set_user_addresses = context.set_user_addresses.clone();
 
-        Callback::from(move |_| {
+        Callback::from(move |query_type: QueryType| {
             let config = Rc::clone(&config);
             let set_deadline = set_deadline.clone();
-
-            log::info!("Query request triggered");
+            let set_timestamp = set_timestamp.clone();
+            let set_max_funds = set_max_funds.clone();
+            let set_ping_amount = set_ping_amount.clone();
+            // let set_user_addresses = set_user_addresses.clone();
 
             wasm_bindgen_futures::spawn_local(async move {
                 let config = config.borrow();
-                match query::get_deadline(&config).await {
-                    Ok(result) => {
-                        set_deadline.emit(result);
-                    }
-                    Err(err) => {
-                        log::error!("Query failed: {:?}", err);
+
+                match query_type {
+                    QueryType::Deadline => match query::get_deadline(&config).await {
+                        Ok(result) => {
+                            set_deadline.emit(result);
+                        }
+                        Err(err) => {
+                            log::error!("Query failed for deadline: {:?}", err);
+                        }
+                    },
+                    QueryType::Timestamp => match query::get_timestamp(&config).await {
+                        Ok(result) => {
+                            set_timestamp.emit(result);
+                        }
+                        Err(err) => {
+                            log::error!("Query failed for timestamp: {:?}", err);
+                        }
+                    },
+                    QueryType::MaxFunds => match query::get_max_funds(&config).await {
+                        Ok(result) => {
+                            set_max_funds.emit(result);
+                        }
+                        Err(err) => {
+                            log::error!("Query failed for max funds: {:?}", err);
+                        }
+                    },
+                    QueryType::PingAmount => match query::get_ping_amount(&config).await {
+                        Ok(result) => {
+                            set_ping_amount.emit(result);
+                        }
+                        Err(err) => {
+                            log::error!("Query failed for ping amount: {:?}", err);
+                        }
+                    },
+                    // QueryType::UserAddresses => match query::get_user_addresses(&config).await {
+                    //     Ok(result) => {
+                    //         set_user_addresses.emit(result);
+                    //     }
+                    //     Err(err) => {
+                    //         log::error!("Query failed for user addresses: {:?}", err);
+                    //     }
+                    // },
+                    _ => {
+                        log::error!("Unknown query type");
                     }
                 }
             });
@@ -90,9 +134,13 @@ pub fn admin_panel() -> Html {
         <div class = "admin">
         <h2>{"Ping Pong Admin Panel"}</h2>
         <div class = "admin-panel-btns">
-                <Button name="Query" class_name="query-btn" button_type = "button" on_click={query_service.clone()} />
-                <Button name = "Transaction" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.clone()} />
-                <Button name = "SC Setup" class_name = "transaction-btn" button_type = "button" on_click={sc_setup_service.clone()} />
+            <Button name = "Deadline" class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::Deadline)} />
+            <Button name = "Timestamp" class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::Timestamp)} />
+            <Button name = "Max Funds" class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::MaxFunds)} />
+            <Button name = "Ping Amount" class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::PingAmount)} />
+            // <Button name = "User Addresses" class_name = "query-btn" button_type="button" on_click={query_service.reform(|_| QueryType::UserAddresses)} />
+            <Button name = "Transaction" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.clone()} />
+            <Button name = "SC Setup" class_name = "transaction-btn" button_type = "button" on_click={sc_setup_service.clone()} />
         </div>
             {
                 if !context.deadline.is_empty() {
@@ -103,10 +151,43 @@ pub fn admin_panel() -> Html {
                     }
                 }
                 else {
+                    html! { <></> }
+                }
+            }
+            {
+                if !context.timestamp.is_empty() {
                     html! {
                         <>
+                            <p>{ &context.timestamp }</p>
                         </>
                     }
+                }
+                else {
+                    html! { <></> }
+                }
+            }
+            {
+                if !context.max_funds.is_empty() {
+                    html! {
+                        <>
+                            <p>{ &context.max_funds }</p>
+                        </>
+                    }
+                }
+                else {
+                    html! { <></> }
+                }
+            }
+            {
+                if !context.ping_amount.is_empty() {
+                    html! {
+                        <>
+                            <p>{ &context.ping_amount }</p>
+                        </>
+                    }
+                }
+                else {
+                    html! { <></> }
                 }
             }
             {
@@ -118,10 +199,7 @@ pub fn admin_panel() -> Html {
                     }
                 }
                 else {
-                    html! {
-                        <>
-                        </>
-                    }
+                    html! { <></> }
                 }
             }
             {
@@ -133,10 +211,7 @@ pub fn admin_panel() -> Html {
                     }
                 }
                 else {
-                    html! {
-                        <>
-                        </>
-                    }
+                    html! { <></> }
                 }
             }
         </div>

@@ -1,7 +1,8 @@
 use reqwest::Client;
 
-pub async fn get_request(name: &str, full_endpoint: &str) -> Result<String, String> {
+pub async fn get_request(name: &str, endpoint: &str) -> Result<String, String> {
     let client = Client::new();
+    let full_endpoint = format!("{endpoint}/{name}");
     let response = client
         .get(full_endpoint)
         .send()

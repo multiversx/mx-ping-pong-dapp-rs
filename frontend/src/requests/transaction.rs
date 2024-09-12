@@ -5,9 +5,9 @@ use super::request;
 pub async fn ping(config: &Config) -> Result<String, String> {
     let transaction_url = &config.transaction_url;
     let dest = &config.dest;
-    let full_endpoint = format!("http://{dest}{transaction_url}");
+    let endpoint = format!("http://{dest}{transaction_url}");
 
-    request::post_request("ping", &full_endpoint).await
+    request::post_request("ping", &endpoint).await
 }
 
 pub async fn sc_setup(config: &Config) -> Result<String, String> {
