@@ -97,13 +97,12 @@ pub async fn get_user_addresses() -> impl Responder {
         .run()
         .await;
 
-        let addresses: Vec<String> = result_value
+    let addresses: Vec<String> = result_value
         .iter()
         .map(|address| Bech32Address::from(address).to_string())
         .collect();
 
-    // Return the addresses wrapped in a JSON response
-    web::Json(Query { addresses })
+    format!("Result: {result_value:?}")
 }
 
 pub fn query_configuration(cfg: &mut web::ServiceConfig) {
