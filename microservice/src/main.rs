@@ -12,8 +12,6 @@ mod routes;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    let interactor = interactor::ContractInteract::new().await;
-    let shared_interactor = Arc::new(RwLock::new(interactor));
 
     let redis_client =
         Client::open(env::var("REDIS_URL").unwrap()).expect("Failed to connect to Redis server");
@@ -31,9 +29,6 @@ async fn main() -> std::io::Result<()> {
     // start the Actix server
     HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(AppState {
-                interactor: shared_interactor.clone(),
-            }))
             .wrap(
                 Cors::default()
                     .allow_any_origin()
@@ -41,8 +36,11 @@ async fn main() -> std::io::Result<()> {
                     .allow_any_header()
                     .supports_credentials(),
             )
+            .app_data(web::Data::new(redis_client.clone()))
             .service(routes::query::get_deadline)
             .service(routes::setup::setup_contract)
+            .service(web::scope("/query").configure(query_configuration))
+            .service(web::scope("/tx").configure(tx_configuration))
             .service(web::scope("/query").configure(query_configuration))
             .service(web::scope("/tx").configure(tx_configuration))
     })

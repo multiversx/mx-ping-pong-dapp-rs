@@ -1,26 +1,14 @@
 use actix_web::{post, web, Responder};
 use imports::{Bech32Address, IgnoreValue, ReturnsRawResult};
+use interactor::ContractInteract;
 use redis::{AsyncCommands, Client};
 
 use crate::routes::{proxy, tx_models::*};
-use crate::shared_state::AppState;
 use multiversx_sc_snippets::*;
 
 #[post("/ping")]
-pub async fn ping(
-    data: web::Data<AppState>,
-    body: web::Json<PingReqBody>,
-    redis_client: web::Data<Client>,
-) -> impl Responder {
-    // get a mutable lock on the contract_interact (entire struct)
-    let mut contract_interact = match data.interactor.write() {
-        Ok(lock) => lock,
-        Err(poisoned) => {
-            // log the error
-            return format!("Failed to acquire lock: {:?}", poisoned);
-        }
-    };
-
+pub async fn ping(body: web::Json<PingReqBody>, redis_client: web::Data<Client>) -> impl Responder {
+    let mut contract_interact = ContractInteract::new().await;
     let (amount, sender) = body.get_tx_sending_values();
 
     let wallet_address = Bech32Address::from_bech32_string(sender);
@@ -28,8 +16,6 @@ pub async fn ping(
     let ping_amount = amount as u64;
     let _data = IgnoreValue;
 
-    // mby unlock if failure ?
-    // access both interactor and state through the mutable borrow
     let response = contract_interact
         .interactor
         .tx()
@@ -58,22 +44,13 @@ pub async fn ping(
 }
 
 #[post("/pong")]
-pub async fn pong(data: web::Data<AppState>, body: web::Json<PongReqBody>) -> impl Responder {
-    // get a mutable lock on the contract_interact (entire struct)
-    let mut contract_interact = match data.interactor.write() {
-        Ok(lock) => lock,
-        Err(poisoned) => {
-            // log the error
-            return format!("Failed to acquire lock: {:?}", poisoned);
-        }
-    };
-
+pub async fn pong(body: web::Json<PongReqBody>) -> impl Responder {
+    let mut contract_interact = ContractInteract::new().await;
     let sender = body.get_tx_sending_values();
 
     let wallet_address = Bech32Address::from_bech32_string(sender);
     let current_address = contract_interact.state.current_address().clone();
 
-    // access both interactor and state through the mutable borrow
     let response = contract_interact
         .interactor
         .tx()
@@ -91,19 +68,11 @@ pub async fn pong(data: web::Data<AppState>, body: web::Json<PongReqBody>) -> im
 }
 
 #[post("/pong_all")]
-pub async fn pong_all(data: web::Data<AppState>) -> impl Responder {
-    // get a mutable lock on the contract_interact (entire struct)
-    let mut contract_interact = match data.interactor.write() {
-        Ok(lock) => lock,
-        Err(poisoned) => {
-            // log the error
-            return format!("Failed to acquire lock: {:?}", poisoned);
-        }
-    };
+pub async fn pong_all() -> impl Responder {
+    let mut contract_interact = ContractInteract::new().await;
     let wallet_address = contract_interact.wallet_address.clone();
     let current_address = contract_interact.state.current_address().clone();
 
-    // access both interactor and state through the mutable borrow
     let response = contract_interact
         .interactor
         .tx()

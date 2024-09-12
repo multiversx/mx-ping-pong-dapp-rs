@@ -1,31 +1,18 @@
-use actix_web::{get, web, HttpResponse, Responder};
+use actix_web::{get, web, Responder};
 use imports::{Bech32Address, ReturnsResultUnmanaged};
+use interactor::ContractInteract;
 use redis::{AsyncCommands, Client, RedisError};
-use serde_json::json;
 
 use crate::routes::{
     helpers::{nominated_str, readable_timestamp},
     proxy,
     query_models::*,
 };
-use crate::shared_state::AppState;
 use multiversx_sc_snippets::*;
 
 #[get("/deadline")]
-pub async fn get_deadline(
-    data: web::Data<AppState>,
-    redis_client: web::Data<Client>,
-) -> impl Responder {
-    // get a mutable lock on the contract_interact (entire struct)
-    let mut contract_interact = match data.interactor.write() {
-        Ok(lock) => lock,
-        Err(poisoned) => {
-            // log the error
-            return HttpResponse::InternalServerError()
-                .json(json!({ "error": format!("Failed to acquire lock: {:?}", poisoned) }));
-        }
-    };
-
+pub async fn get_deadline(redis_client: web::Data<Client>) -> impl Responder {
+    let mut contract_interact = ContractInteract::new().await;
     let mut con = redis_client
         .get_multiplexed_async_connection()
         .await
@@ -38,11 +25,10 @@ pub async fn get_deadline(
         Err(_) => {
             let current_address = contract_interact.state.current_address().clone();
 
-            // access both interactor and state through the mutable borrow
             let result_value = contract_interact
                 .interactor
                 .query()
-                .to(current_address) // access state via the mutable reference
+                .to(current_address)
                 .typed(proxy::PingPongProxy)
                 .deadline()
                 .returns(ReturnsResultUnmanaged)
@@ -56,23 +42,11 @@ pub async fn get_deadline(
             QueryResponse::new(formatted_deadline).response()
         }
     }
-    // access both interactor and state through the mutable borrow
 }
 
 #[get("/timestamp")]
-pub async fn get_timestamp(
-    data: web::Data<AppState>,
-    redis_client: web::Data<Client>,
-) -> impl Responder {
-    // get a mutable lock on the contract_interact (entire struct)
-    let mut contract_interact = match data.interactor.write() {
-        Ok(lock) => lock,
-        Err(poisoned) => {
-            // log the error
-            return HttpResponse::InternalServerError()
-                .json(json!({ "error": format!("Failed to acquire lock: {:?}", poisoned) }));
-        }
-    };
+pub async fn get_timestamp(redis_client: web::Data<Client>) -> impl Responder {
+    let mut contract_interact = ContractInteract::new().await;
 
     let mut con = redis_client
         .get_multiplexed_async_connection()
@@ -86,11 +60,10 @@ pub async fn get_timestamp(
         Err(_) => {
             let current_address = contract_interact.state.current_address().clone();
 
-            // access both interactor and state through the mutable borrow
             let result_value = contract_interact
                 .interactor
                 .query()
-                .to(current_address) // access state via the mutable reference
+                .to(current_address)
                 .typed(proxy::PingPongProxy)
                 .activation_timestamp()
                 .returns(ReturnsResultUnmanaged)
@@ -106,20 +79,8 @@ pub async fn get_timestamp(
 }
 
 #[get("/ping_amount")]
-pub async fn get_ping_amount(
-    data: web::Data<AppState>,
-    redis_client: web::Data<Client>,
-) -> impl Responder {
-    // get a mutable lock on the contract_interact (entire struct)
-    let mut contract_interact = match data.interactor.write() {
-        Ok(lock) => lock,
-        Err(poisoned) => {
-            // log the error
-            return HttpResponse::InternalServerError()
-                .json(json!({ "error": format!("Failed to acquire lock: {:?}", poisoned) }));
-        }
-    };
-
+pub async fn get_ping_amount(redis_client: web::Data<Client>) -> impl Responder {
+    let mut contract_interact = ContractInteract::new().await;
     let mut con = redis_client
         .get_multiplexed_async_connection()
         .await
@@ -132,11 +93,10 @@ pub async fn get_ping_amount(
         Err(_) => {
             let current_address = contract_interact.state.current_address().clone();
 
-            // access both interactor and state through the mutable borrow
             let result_value = contract_interact
                 .interactor
                 .query()
-                .to(current_address) // access state via the mutable reference
+                .to(current_address)
                 .typed(proxy::PingPongProxy)
                 .ping_amount()
                 .returns(ReturnsResultUnmanaged)
@@ -155,20 +115,8 @@ pub async fn get_ping_amount(
 }
 
 #[get("/max_funds")]
-pub async fn get_max_funds(
-    data: web::Data<AppState>,
-    redis_client: web::Data<Client>,
-) -> impl Responder {
-    // get a mutable lock on the contract_interact (entire struct)
-    let mut contract_interact = match data.interactor.write() {
-        Ok(lock) => lock,
-        Err(poisoned) => {
-            // log the error
-            return HttpResponse::InternalServerError()
-                .json(json!({ "error": format!("Failed to acquire lock: {:?}", poisoned) }));
-        }
-    };
-
+pub async fn get_max_funds(redis_client: web::Data<Client>) -> impl Responder {
+    let mut contract_interact = ContractInteract::new().await;
     let mut con = redis_client
         .get_multiplexed_async_connection()
         .await
@@ -181,11 +129,10 @@ pub async fn get_max_funds(
         Err(_) => {
             let current_address = contract_interact.state.current_address().clone();
 
-            // access both interactor and state through the mutable borrow
             let result_value = contract_interact
                 .interactor
                 .query()
-                .to(current_address) // access state via the mutable reference
+                .to(current_address)
                 .typed(proxy::PingPongProxy)
                 .max_funds()
                 .returns(ReturnsResultUnmanaged)
@@ -206,19 +153,8 @@ pub async fn get_max_funds(
 }
 
 #[get("/user_addresses")]
-pub async fn get_user_addresses(
-    data: web::Data<AppState>,
-    redis_client: web::Data<Client>,
-) -> impl Responder {
-    // get a mutable lock on the contract_interact (entire struct)
-    let mut contract_interact = match data.interactor.write() {
-        Ok(lock) => lock,
-        Err(poisoned) => {
-            // log the error
-            return HttpResponse::InternalServerError()
-                .json(json!({ "error": format!("Failed to acquire lock: {:?}", poisoned) }));
-        }
-    };
+pub async fn get_user_addresses(redis_client: web::Data<Client>) -> impl Responder {
+    let mut contract_interact = ContractInteract::new().await;
 
     let mut con = redis_client
         .get_multiplexed_async_connection()
@@ -235,11 +171,10 @@ pub async fn get_user_addresses(
         Err(_) => {
             let current_address = contract_interact.state.current_address().clone();
 
-            // access both interactor and state through the mutable borrow
             let result_value = contract_interact
                 .interactor
                 .query()
-                .to(current_address) // access state via the mutable reference
+                .to(current_address)
                 .typed(proxy::PingPongProxy)
                 .get_user_addresses()
                 .returns(ReturnsResultUnmanaged)
