@@ -38,7 +38,7 @@ async fn main() -> std::io::Result<()> {
             )
             .app_data(web::Data::new(redis_client.clone()))
             .service(routes::query::get_deadline)
-            .service(routes::setup::setup_contract)
+            .service(web::scope("/setup").configure(routes::setup_configuration))
             .service(web::scope("/query").configure(query_configuration))
             .service(web::scope("/tx").configure(tx_configuration))
             .service(web::scope("/query").configure(query_configuration))

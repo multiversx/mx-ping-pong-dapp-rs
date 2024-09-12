@@ -1,14 +1,15 @@
-use actix_web::web;
-use actix_web::{post, Responder};
+use actix_web::{get, post, Responder};
+use actix_web::{web, HttpResponse};
 use imports::{bech32, Bech32Address, OptionalValue, ReturnsNewAddress, RustBigUint};
 use interactor::ContractInteract;
+use serde_json::json;
 
 use crate::routes::proxy;
 use crate::routes::tx_models::*;
 use multiversx_sc_snippets::*;
 use redis::{AsyncCommands, Client};
 
-#[post("/setup")]
+#[post("")]
 pub async fn setup_contract(
     body: web::Json<DeployReqBody>,
     redis_client: web::Data<Client>,
@@ -56,11 +57,6 @@ pub async fn setup_contract(
         .await
         .unwrap();
 
-    let _: () = con
-        .set("contract_address", &new_address_bech32)
-        .await
-        .unwrap();
-
     // Invalidate values corresponding to previous deployed contract
     let _: () = con.del("user_addresses").await.unwrap();
     let _: () = con.del("ping_amount").await.unwrap();
@@ -69,4 +65,16 @@ pub async fn setup_contract(
     let _: () = con.del("timestamp").await.unwrap();
 
     format!("new address: {new_address_bech32}")
+}
+
+#[get("/contract_address")]
+pub async fn get_contract_address() -> impl Responder {
+    let contract_interact = ContractInteract::new().await;
+
+    HttpResponse::Ok()
+        .json(json!({"contract_address": contract_interact.state.current_address().to_string()}))
+}
+
+pub fn setup_configuration(cfg: &mut web::ServiceConfig) {
+    cfg.service(setup_contract).service(get_contract_address);
 }
