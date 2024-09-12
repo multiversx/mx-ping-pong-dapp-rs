@@ -2,9 +2,8 @@ use actix_cors::Cors;
 use actix_web::{web, App, HttpServer};
 use dotenv::dotenv;
 use redis::Client;
-use routes::{query_configuration, tx_configuration};
+use routes::{query_configuration, setup_configuration, tx_configuration};
 use std::env;
-use std::sync::{Arc, RwLock};
 mod shared_state;
 pub use shared_state::AppState;
 mod routes;
@@ -37,10 +36,7 @@ async fn main() -> std::io::Result<()> {
                     .supports_credentials(),
             )
             .app_data(web::Data::new(redis_client.clone()))
-            .service(routes::query::get_deadline)
-            .service(web::scope("/setup").configure(routes::setup_configuration))
-            .service(web::scope("/query").configure(query_configuration))
-            .service(web::scope("/tx").configure(tx_configuration))
+            .service(web::scope("/setup").configure(setup_configuration))
             .service(web::scope("/query").configure(query_configuration))
             .service(web::scope("/tx").configure(tx_configuration))
     })
