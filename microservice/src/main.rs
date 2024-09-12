@@ -1,22 +1,14 @@
 use actix_cors::Cors;
 use actix_web::{web, App, HttpServer};
 use routes::{query_configuration, tx_configuration};
-use std::sync::{Arc, RwLock};
 mod shared_state;
 pub use shared_state::AppState;
 mod routes;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let interactor = interactor::ContractInteract::new().await;
-    let shared_interactor = Arc::new(RwLock::new(interactor));
-
-    // start the Actix server
     HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(AppState {
-                interactor: shared_interactor.clone(),
-            }))
             .wrap(
                 Cors::default()
                     .allow_any_origin()

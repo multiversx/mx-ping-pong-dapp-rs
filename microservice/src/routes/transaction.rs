@@ -1,5 +1,5 @@
 use actix_web::{post, web, Responder};
-use imports::{Bech32Address, IgnoreValue, ReturnsRawResult};
+use imports::{IgnoreValue, ReturnsRawResult};
 use interactor::ContractInteract;
 
 use crate::routes::proxy;
@@ -14,8 +14,6 @@ pub async fn ping() -> impl Responder {
     let ping_amount = 5u64;
     let _data = IgnoreValue;
 
-    // mby unlock if failure ?
-    // access both interactor and state through the mutable borrow
     let response = contract_interact
         .interactor
         .tx()
@@ -43,7 +41,6 @@ pub async fn pong() -> impl Responder {
     let current_address = contract_interact.state.current_address().clone();
     let wallet_address = contract_interact.wallet_address.clone();
 
-    // access both interactor and state through the mutable borrow
     let response = contract_interact
         .interactor
         .tx()
@@ -67,7 +64,6 @@ pub async fn pong_all() -> impl Responder {
     let wallet_address = contract_interact.wallet_address.clone();
     let current_address = contract_interact.state.current_address().clone();
 
-    // access both interactor and state through the mutable borrow
     let response = contract_interact
         .interactor
         .tx()

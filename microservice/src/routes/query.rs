@@ -10,11 +10,10 @@ pub async fn get_deadline() -> impl Responder {
     let mut contract_interact = ContractInteract::new().await;
     let current_address = contract_interact.state.current_address().clone();
 
-    // access both interactor and state through the mutable borrow
     let result_value = contract_interact
         .interactor
         .query()
-        .to(current_address) // access state via the mutable reference
+        .to(current_address)
         .typed(proxy::PingPongProxy)
         .deadline()
         .returns(ReturnsResultUnmanaged)
@@ -30,11 +29,10 @@ pub async fn get_timestamp() -> impl Responder {
     let mut contract_interact = ContractInteract::new().await;
     let current_address = contract_interact.state.current_address().clone();
 
-    // access both interactor and state through the mutable borrow
     let result_value = contract_interact
         .interactor
         .query()
-        .to(current_address) // access state via the mutable reference
+        .to(current_address)
         .typed(proxy::PingPongProxy)
         .activation_timestamp()
         .returns(ReturnsResultUnmanaged)
@@ -50,11 +48,10 @@ pub async fn get_ping_amount() -> impl Responder {
     let mut contract_interact = ContractInteract::new().await;
     let current_address = contract_interact.state.current_address().clone();
 
-    // access both interactor and state through the mutable borrow
     let result_value = contract_interact
         .interactor
         .query()
-        .to(current_address) // access state via the mutable reference
+        .to(current_address)
         .typed(proxy::PingPongProxy)
         .ping_amount()
         .returns(ReturnsResultUnmanaged)
@@ -70,11 +67,10 @@ pub async fn get_max_funds() -> impl Responder {
     let mut contract_interact = ContractInteract::new().await;
     let current_address = contract_interact.state.current_address().clone();
 
-    // access both interactor and state through the mutable borrow
     let result_value = contract_interact
         .interactor
         .query()
-        .to(current_address) // access state via the mutable reference
+        .to(current_address)
         .typed(proxy::PingPongProxy)
         .max_funds()
         .returns(ReturnsResultUnmanaged)
@@ -90,11 +86,10 @@ pub async fn get_user_addresses() -> impl Responder {
     let mut contract_interact = ContractInteract::new().await;
     let current_address = contract_interact.state.current_address().clone();
 
-    // access both interactor and state through the mutable borrow
     let result_value = contract_interact
         .interactor
         .query()
-        .to(current_address) // access state via the mutable reference
+        .to(current_address)
         .typed(proxy::PingPongProxy)
         .get_user_addresses()
         .returns(ReturnsResultUnmanaged)

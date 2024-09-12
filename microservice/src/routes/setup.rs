@@ -1,4 +1,4 @@
-use actix_web::{post, web, Responder};
+use actix_web::{post, Responder};
 use imports::{bech32, Bech32Address, OptionalValue, ReturnsNewAddress, RustBigUint};
 use interactor::ContractInteract;
 
