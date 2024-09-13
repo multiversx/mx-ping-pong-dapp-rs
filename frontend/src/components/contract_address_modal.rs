@@ -21,7 +21,10 @@ pub fn contract_address_modal(props: &ContractAddressModalProps) -> Html {
 
     let (explorer_link, redirect_visible) = if props.address.starts_with("erd") {
         (
-            format!("https://explorer.multiversx.com/accounts/{}", props.address),
+            format!(
+                "https://devnet-explorer.multiversx.com/accounts/{}",
+                props.address
+            ),
             "visible".to_string(),
         )
     } else {
