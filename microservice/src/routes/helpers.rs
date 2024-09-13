@@ -50,7 +50,6 @@ pub fn nominated_str(value: RustBigUint) -> String {
         }
         let mut result = "0.".to_string();
         let len_diff = 18usize - string_value.len();
-        println!("{}", len_diff);
         result.push_str(&"0".repeat(len_diff));
         result.push_str(string_value.trim_end_matches("0"));
         result

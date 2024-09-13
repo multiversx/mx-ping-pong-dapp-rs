@@ -1,3 +1,5 @@
+use serde_json::Value;
+
 use crate::config::Config;
 
 use super::request;
@@ -10,15 +12,23 @@ pub enum QueryType {
     UserAddresses,
 }
 
-pub async fn get_deadline(config: &Config) -> Result<String, String> {
+pub async fn get_deadline(config: &Config) -> Result<Value, Value> {
     let query_url = &config.query_url;
     let dest = &config.dest;
-    let full_endpoint = format!("http://{dest}{query_url}/deadline");
+    let endpoint = format!("http://{dest}{query_url}");
+
+    request::get_request("deadline", &endpoint).await
+}
+
+pub async fn get_timestamp(config: &Config) -> Result<Value, Value> {
+    let query_url = &config.query_url;
+    let dest = &config.dest;
+    let endpoint = format!("http://{dest}{query_url}");
 
     request::get_request("timestamp", &endpoint).await
 }
 
-pub async fn get_max_funds(config: &Config) -> Result<String, String> {
+pub async fn get_max_funds(config: &Config) -> Result<Value, Value> {
     let query_url = &config.query_url;
     let dest = &config.dest;
     let endpoint = format!("http://{dest}{query_url}");
@@ -26,7 +36,7 @@ pub async fn get_max_funds(config: &Config) -> Result<String, String> {
     request::get_request("max_funds", &endpoint).await
 }
 
-pub async fn get_ping_amount(config: &Config) -> Result<String, String> {
+pub async fn get_ping_amount(config: &Config) -> Result<Value, Value> {
     let query_url = &config.query_url;
     let dest = &config.dest;
     let endpoint = format!("http://{dest}{query_url}");
@@ -34,7 +44,7 @@ pub async fn get_ping_amount(config: &Config) -> Result<String, String> {
     request::get_request("ping_amount", &endpoint).await
 }
 
-pub async fn get_user_addresses(config: &Config) -> Result<String, String> {
+pub async fn get_user_addresses(config: &Config) -> Result<Value, Value> {
     let query_url = &config.query_url;
     let dest = &config.dest;
     let endpoint = format!("http://{dest}{query_url}");

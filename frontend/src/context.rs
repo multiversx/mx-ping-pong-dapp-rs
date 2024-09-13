@@ -3,6 +3,7 @@ use std::rc::Rc;
 
 use crate::config::Config;
 use html::ChildrenProps;
+use serde_json::{json, Value};
 use yew::prelude::*;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -12,13 +13,11 @@ pub struct ConfigContext {
     pub timestamp: String,
     pub max_funds: String,
     pub ping_amount: String,
-    //pub user_addresses: Vec<String>,
     pub set_deadline: Callback<String>,
     pub set_timestamp: Callback<String>,
     pub set_max_funds: Callback<String>,
     pub set_ping_amount: Callback<String>,
     pub set_config: Callback<Config>,
-    
 }
 
 impl Default for ConfigContext {
@@ -66,14 +65,13 @@ pub fn config_provider(props: &ChildrenProps) -> Html {
             max_funds.set(new_max_funds);
         })
     };
-    
+
     let set_ping_amount = {
         let ping_amount = ping_amount.clone();
         Callback::from(move |new_ping_amount: String| {
             ping_amount.set(new_ping_amount);
         })
     };
-
 
     let set_config = {
         let config = config.clone();
@@ -84,7 +82,18 @@ pub fn config_provider(props: &ChildrenProps) -> Html {
     };
 
     html! {
-        <ContextProvider<ConfigContext> context={ConfigContext { config: (*config).clone(), deadline: (*deadline).clone(), timestamp: (*timestamp).clone(), max_funds: (*max_funds).clone(), ping_amount: (*ping_amount).clone(), set_deadline, set_timestamp, set_max_funds, set_ping_amount, set_config}}>
+        <ContextProvider<ConfigContext> context = {
+            ConfigContext { 
+            config: (*config).clone(),
+            deadline: (*deadline).clone(),
+            timestamp: (*timestamp).clone(),
+            max_funds: (*max_funds).clone(),
+            ping_amount: (*ping_amount).clone(),
+            set_deadline,
+            set_timestamp,
+            set_max_funds,
+            set_ping_amount,
+            set_config}}>
             { for props.children.iter() }
         </ContextProvider<ConfigContext>>
     }

@@ -19,6 +19,20 @@ pub async fn ping(body: web::Json<PingReqBody>, redis_client: web::Data<Client>)
     let current_address = contract_interact.state.current_address().clone();
     let _data = IgnoreValue;
 
+    // let _response = contract_interact
+    //     .interactor
+    //     .tx()
+    //     .from(contract_interact.wallet_address2.clone())
+    //     .to(current_address.clone())
+    //     .gas(30_000_000u64)
+    //     .typed(proxy::PingPongProxy)
+    //     .ping(_data.clone())
+    //     .egld(BigUint::from(&amount_numeric))
+    //     .returns(ReturnsRawResult)
+    //     .prepare_async()
+    //     .run()
+    //     .await;
+
     let _response = contract_interact
         .interactor
         .tx()

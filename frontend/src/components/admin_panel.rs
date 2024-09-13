@@ -13,14 +13,15 @@ pub fn admin_panel() -> Html {
 
     let setup_result = use_state(|| String::new());
     let transaction_result = use_state(|| String::new());
+    let user_addresses_result = use_state(|| String::new());
 
     let query_service = {
         let config = Rc::clone(&context.config);
+        let user_address = user_addresses_result.clone();
         let set_deadline = context.set_deadline.clone();
         let set_timestamp = context.set_timestamp.clone();
         let set_max_funds = context.set_max_funds.clone();
         let set_ping_amount = context.set_ping_amount.clone();
-        //let set_user_addresses = context.set_user_addresses.clone();
 
         Callback::from(move |query_type: QueryType| {
             let config = Rc::clone(&config);
@@ -28,7 +29,7 @@ pub fn admin_panel() -> Html {
             let set_timestamp = set_timestamp.clone();
             let set_max_funds = set_max_funds.clone();
             let set_ping_amount = set_ping_amount.clone();
-            // let set_user_addresses = set_user_addresses.clone();
+            let set_user_address = user_address.clone();
 
             wasm_bindgen_futures::spawn_local(async move {
                 let config = config.borrow();
@@ -36,7 +37,7 @@ pub fn admin_panel() -> Html {
                 match query_type {
                     QueryType::Deadline => match query::get_deadline(&config).await {
                         Ok(result) => {
-                            set_deadline.emit(result);
+                            set_deadline.emit(format!("Deadline: {}", result["response"].as_str().unwrap()));
                         }
                         Err(err) => {
                             log::error!("Query failed for deadline: {:?}", err);
@@ -44,7 +45,7 @@ pub fn admin_panel() -> Html {
                     },
                     QueryType::Timestamp => match query::get_timestamp(&config).await {
                         Ok(result) => {
-                            set_timestamp.emit(result);
+                            set_timestamp.emit(format!("Timestamp: {}", result["response"].as_str().unwrap()));
                         }
                         Err(err) => {
                             log::error!("Query failed for timestamp: {:?}", err);
@@ -52,7 +53,7 @@ pub fn admin_panel() -> Html {
                     },
                     QueryType::MaxFunds => match query::get_max_funds(&config).await {
                         Ok(result) => {
-                            set_max_funds.emit(result);
+                            set_max_funds.emit(format!("MaxFunds: {}", result["response"].as_str().unwrap()));
                         }
                         Err(err) => {
                             log::error!("Query failed for max funds: {:?}", err);
@@ -60,20 +61,29 @@ pub fn admin_panel() -> Html {
                     },
                     QueryType::PingAmount => match query::get_ping_amount(&config).await {
                         Ok(result) => {
-                            set_ping_amount.emit(result);
+                            set_ping_amount.emit(format!("PingAmount: {}", result["response"].as_str().unwrap()));
                         }
                         Err(err) => {
                             log::error!("Query failed for ping amount: {:?}", err);
                         }
                     },
-                    // QueryType::UserAddresses => match query::get_user_addresses(&config).await {
-                    //     Ok(result) => {
-                    //         set_user_addresses.emit(result);
-                    //     }
-                    //     Err(err) => {
-                    //         log::error!("Query failed for user addresses: {:?}", err);
-                    //     }
-                    // },
+                    QueryType::UserAddresses => match query::get_user_addresses(&config).await {
+                        Ok(result) => {
+                            if let Some(addresses) = result["response"].as_array() {
+                                let formatted_addresses = addresses
+                                    .iter()
+                                    .filter_map(|address| address.as_str())
+                                    .collect::<Vec<_>>()
+                                    .join("\n");
+                                set_user_address.set(formatted_addresses);
+                            } else {
+                                log::error!("'response' field is not an array or is missing.");
+                            }
+                        }
+                        Err(err) => {
+                            log::error!("Query failed for user addresses: {:?}", err);
+                        }
+                    },
                     _ => {
                         log::error!("Unknown query type");
                     }
@@ -166,7 +176,7 @@ pub fn admin_panel() -> Html {
             <Button name = "Timestamp" class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::Timestamp)} />
             <Button name = "Max Funds" class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::MaxFunds)} />
             <Button name = "Ping Amount" class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::PingAmount)} />
-            // <Button name = "User Addresses" class_name = "query-btn" button_type="button" on_click={query_service.reform(|_| QueryType::UserAddresses)} />
+            <Button name = "User Addresses" class_name = "query-btn" button_type="button" on_click={query_service.reform(|_| QueryType::UserAddresses)} />
             <Button name = "Ping" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Ping)} />
             <Button name = "Pong" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Pong)} />
             <Button name = "Pong all" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::PongAll)} />
@@ -217,6 +227,18 @@ pub fn admin_panel() -> Html {
                     }
                 }
                 else {
+                    html! { <></> }
+                }
+            }
+            {
+                if !(*user_addresses_result).is_empty() {
+                    let addresses: Vec<&str> = (*user_addresses_result).split('\n').collect();
+                    html! {
+                        <ul>
+                            { for addresses.iter().map(|address| html! { <li>{ address }</li> }) }
+                        </ul>
+                    }
+                } else {
                     html! { <></> }
                 }
             }
