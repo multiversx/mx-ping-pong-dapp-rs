@@ -1,19 +1,28 @@
 use std::rc::Rc;
 use yew::prelude::*;
+use yew_icons::{Icon, IconId};
 
 use crate::{
-    components::Button,
+    components::{Button, ContractAddressModal, TxStatusModal},
     context::ConfigContext,
-    requests::{query, transaction, TransactionType, QueryType},
+    requests::{query, transaction, QueryType, TransactionType},
 };
+
+use super::contract_address_modal;
 
 #[function_component(AdminPanel)]
 pub fn admin_panel() -> Html {
     let context = use_context::<ConfigContext>().expect("Failed to get config context");
 
-    let setup_result: UseStateHandle<String> = use_state(String::new);
-    let transaction_result: UseStateHandle<String> = use_state(String::new);
-    let user_addresses_result: UseStateHandle<String> = use_state(String::new);
+    let setup_result = use_state(|| String::new());
+    let transaction_result = use_state(|| String::new());
+    let tx_status_modal_visible = use_state(|| false);
+    let tx_status = use_state(|| String::new());
+    let status_icon_id = use_state(|| IconId::FontAwesomeRegularHourglass);
+    let user_addresses_result = use_state(|| String::new());
+    let contract_address_modal_extended = use_state(|| false);
+    let addr_modal_arrow_id = use_state(|| IconId::LucideMaximize2);
+    let is_loading: UseStateHandle<bool> = use_state(|| false);
 
     let query_service = {
         let config = Rc::clone(&context.config);
@@ -37,7 +46,10 @@ pub fn admin_panel() -> Html {
                 match query_type {
                     QueryType::Deadline => match query::get_deadline(&config_borrowed).await {
                         Ok(result) => {
-                            set_deadline.emit(format!("Deadline: {}", result["response"].as_str().unwrap()));
+                            set_deadline.emit(format!(
+                                "Deadline: {}",
+                                result["response"].as_str().unwrap()
+                            ));
                         }
                         Err(err) => {
                             log::error!("Query failed for deadline: {:?}", err);
@@ -45,7 +57,10 @@ pub fn admin_panel() -> Html {
                     },
                     QueryType::Timestamp => match query::get_timestamp(&config_borrowed).await {
                         Ok(result) => {
-                            set_timestamp.emit(format!("Timestamp: {}", result["response"].as_str().unwrap()));
+                            set_timestamp.emit(format!(
+                                "Timestamp: {}",
+                                result["response"].as_str().unwrap()
+                            ));
                         }
                         Err(err) => {
                             log::error!("Query failed for timestamp: {:?}", err);
@@ -53,7 +68,10 @@ pub fn admin_panel() -> Html {
                     },
                     QueryType::MaxFunds => match query::get_max_funds(&config_borrowed).await {
                         Ok(result) => {
-                            set_max_funds.emit(format!("MaxFunds: {}", result["response"].as_str().unwrap()));
+                            set_max_funds.emit(format!(
+                                "MaxFunds: {}",
+                                result["response"].as_str().unwrap()
+                            ));
                         }
                         Err(err) => {
                             log::error!("Query failed for max funds: {:?}", err);
@@ -61,29 +79,34 @@ pub fn admin_panel() -> Html {
                     },
                     QueryType::PingAmount => match query::get_ping_amount(&config_borrowed).await {
                         Ok(result) => {
-                            set_ping_amount.emit(format!("PingAmount: {}", result["response"].as_str().unwrap()));
+                            set_ping_amount.emit(format!(
+                                "PingAmount: {}",
+                                result["response"].as_str().unwrap()
+                            ));
                         }
                         Err(err) => {
                             log::error!("Query failed for ping amount: {:?}", err);
                         }
                     },
-                    QueryType::UserAddresses => match query::get_user_addresses(&config_borrowed).await {
-                        Ok(result) => {
-                            if let Some(addresses) = result["response"].as_array() {
-                                let formatted_addresses = addresses
-                                    .iter()
-                                    .filter_map(|address| address.as_str())
-                                    .collect::<Vec<_>>()
-                                    .join("\n");
-                                set_user_address.set(formatted_addresses);
-                            } else {
-                                log::error!("'response' field is not an array or is missing.");
+                    QueryType::UserAddresses => {
+                        match query::get_user_addresses(&config_borrowed).await {
+                            Ok(result) => {
+                                if let Some(addresses) = result["response"].as_array() {
+                                    let formatted_addresses = addresses
+                                        .iter()
+                                        .filter_map(|address| address.as_str())
+                                        .collect::<Vec<_>>()
+                                        .join("\n");
+                                    set_user_address.set(formatted_addresses);
+                                } else {
+                                    log::error!("'response' field is not an array or is missing.");
+                                }
+                            }
+                            Err(err) => {
+                                log::error!("Query failed for user addresses: {:?}", err);
                             }
                         }
-                        Err(err) => {
-                            log::error!("Query failed for user addresses: {:?}", err);
-                        }
-                    },
+                    }
                 }
             });
         })
@@ -92,12 +115,30 @@ pub fn admin_panel() -> Html {
     let transaction_service = {
         let transaction_result = transaction_result.clone();
         let config = Rc::clone(&context.config);
+        let modal_visible = tx_status_modal_visible.clone();
+        let tx_status = tx_status.clone();
+        let status_icon_id = status_icon_id.clone();
+        let is_loading = is_loading.clone();
 
         Callback::from(move |tx_type: TransactionType| {
             let transaction_result = transaction_result.clone();
             let config = Rc::clone(&config);
+            let modal_visible = modal_visible.clone();
+            let tx_status = tx_status.clone();
+            let status_icon_id = status_icon_id.clone();
+            let is_loading = is_loading.clone();
+
+            if *is_loading {
+                log::info!("Transaction is already in progress");
+                return;
+            }
+
+            is_loading.set(true);
 
             log::info!("Transaction request triggered");
+            modal_visible.set(true);
+            tx_status.set("In progress...".to_string());
+            status_icon_id.set(IconId::FontAwesomeRegularHourglass);
 
             wasm_bindgen_futures::spawn_local(async move {
                 let config_borrowed = config.borrow().clone();
@@ -109,31 +150,51 @@ pub fn admin_panel() -> Html {
                                 "Pinged successfully with {} EGLD",
                                 result["amount"].as_str().unwrap()
                             ));
+                            modal_visible.set(true);
+                            tx_status.set("Success".to_string());
+                            status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
                         }
                         Err(err) => {
                             log::error!("Transaction failed: {:?}", err);
                             transaction_result.set("Ping failed!".to_string());
+                            modal_visible.set(true);
+                            tx_status.set("Failed".to_string());
+                            status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
                         }
                     },
                     TransactionType::Pong => match transaction::pong(&config_borrowed).await {
                         Ok(_result) => {
                             transaction_result.set("Ponged successfully".to_string());
+                            modal_visible.set(true);
+                            tx_status.set("Success".to_string());
+                            status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
                         }
                         Err(err) => {
                             log::error!("Transaction failed: {:?}", err);
                             transaction_result.set("Pong failed!".to_string());
+                            modal_visible.set(true);
+                            tx_status.set("Failed".to_string());
+                            status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
                         }
                     },
-                    TransactionType::PongAll => match transaction::pong_all(&config_borrowed).await {
+                    TransactionType::PongAll => match transaction::pong_all(&config_borrowed).await
+                    {
                         Ok(_result) => {
                             transaction_result.set("Ponged all successfully".to_string());
+                            modal_visible.set(true);
+                            tx_status.set("Success".to_string());
+                            status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
                         }
                         Err(err) => {
                             log::error!("Transaction failed: {:?}", err);
                             transaction_result.set("Pong all failed!".to_string());
+                            modal_visible.set(true);
+                            tx_status.set("Failed".to_string());
+                            status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
                         }
                     },
                 }
+                is_loading.set(false);
             });
         })
     };
@@ -141,30 +202,79 @@ pub fn admin_panel() -> Html {
     let sc_setup_service = {
         let setup_result = setup_result.clone();
         let config = Rc::clone(&context.config);
+        let modal_visible = tx_status_modal_visible.clone();
+        let tx_status = tx_status.clone();
+        let status_icon_id = status_icon_id.clone();
+        let set_contract_address = context.set_contract_address.clone();
+        let is_loading = is_loading.clone();
 
         Callback::from(move |_| {
             let setup_result = setup_result.clone();
             let config = Rc::clone(&config);
-            
+            let modal_visible = modal_visible.clone();
+            let tx_status = tx_status.clone();
+            let status_icon_id = status_icon_id.clone();
+            let set_contract_address = set_contract_address.clone();
+            let is_loading = is_loading.clone();
+
+            if *is_loading {
+                log::info!("Transaction is already in progress");
+                return;
+            }
+
+            is_loading.set(true);
 
             log::info!("SC setup request triggered");
+            modal_visible.set(true);
+            tx_status.set("In progress...".to_string());
+            status_icon_id.set(IconId::FontAwesomeRegularHourglass);
 
             wasm_bindgen_futures::spawn_local(async move {
                 let config_borrowed = config.borrow().clone();
 
                 match transaction::sc_setup(&config_borrowed).await {
                     Ok(result) => {
-                        setup_result.set(format!(
-                            "New deployed address: {}",
-                            result["address"].as_str().unwrap()
-                        ));
+                        let new_addr = result["address"].as_str().unwrap().to_string();
+                        setup_result.set(new_addr.clone());
+                        set_contract_address.emit(new_addr);
+                        modal_visible.set(true);
+                        tx_status.set("Success".to_string());
+                        status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
                     }
                     Err(err) => {
                         log::error!("SC Setup failed: {:?}", err);
                         setup_result.set("SC Setup failed!".to_string());
+                        modal_visible.set(true);
+                        tx_status.set("Failed".to_string());
+                        status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
                     }
                 }
+                is_loading.set(false);
             });
+        })
+    };
+
+    let close_tx_status = {
+        let modal_visible = tx_status_modal_visible.clone();
+        Callback::from(move |_| {
+            modal_visible.set(false);
+        })
+    };
+
+    let change_addr_modal_visibility = {
+        let contract_address_modal_extended = contract_address_modal_extended.clone();
+        let addr_modal_arrow_id = addr_modal_arrow_id.clone();
+
+        Callback::from(move |_| {
+            let contract_address_modal_extended = contract_address_modal_extended.clone();
+            let addr_modal_arrow_id = addr_modal_arrow_id.clone();
+
+            contract_address_modal_extended.set(!*contract_address_modal_extended);
+            if !*contract_address_modal_extended {
+                addr_modal_arrow_id.set(IconId::LucideMinimize2);
+            } else {
+                addr_modal_arrow_id.set(IconId::LucideMaximize2);
+            }
         })
     };
 
@@ -172,15 +282,37 @@ pub fn admin_panel() -> Html {
         <div class = "admin">
         <h2>{"Ping Pong Admin Panel"}</h2>
         <div class = "admin-panel-btns">
-            <Button name = "Deadline" class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::Deadline)} />
-            <Button name = "Timestamp" class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::Timestamp)} />
-            <Button name = "Max Funds" class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::MaxFunds)} />
-            <Button name = "Ping Amount" class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::PingAmount)} />
-            <Button name = "User Addresses" class_name = "query-btn" button_type="button" on_click={query_service.reform(|_| QueryType::UserAddresses)} />
-            <Button name = "Ping" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Ping)} />
-            <Button name = "Pong" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Pong)} />
-            <Button name = "Pong all" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::PongAll)} />
-            <Button name = "SC Setup" class_name = "transaction-btn" button_type = "button" on_click={sc_setup_service.clone()} />
+            <div class = "query-btns">
+                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::Deadline)}>
+                    {"Deadline"}
+                </Button>
+                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::Timestamp)}>
+                    {"Timestamp"}
+                </Button>
+                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::MaxFunds)}>
+                    {"Max Funds"}
+                </Button>
+                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::PingAmount)}>
+                    {"Ping Amount"}
+                </Button>
+                <Button class_name = "query-btn" button_type="button" on_click={query_service.reform(|_| QueryType::UserAddresses)}>
+                    {"User Addresses"}
+                </Button>
+            </div>
+            <div class = "transaction-btns">
+                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Ping)} disabled={*is_loading}>
+                    {"Ping"}
+                </Button>
+                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Pong)} disabled={*is_loading}>
+                    {"Pong"}
+                </Button>
+                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::PongAll)} disabled={*is_loading}>
+                    {"Pong all"}
+                </Button>
+                <Button class_name = "transaction-btn" button_type = "button" on_click={sc_setup_service.clone()} disabled={*is_loading}>
+                    {"SC Setup"}
+                </Button>
+            </div>
         </div>
             {
                 if !context.deadline.is_empty() {
@@ -266,6 +398,17 @@ pub fn admin_panel() -> Html {
                     html! { <></> }
                 }
             }
+
+            <TxStatusModal status={(*tx_status).clone()} on_close={close_tx_status.clone()} is_visible={*tx_status_modal_visible}>
+                <Icon class="iconStatus" icon_id={*status_icon_id} />
+            </TxStatusModal>
+
+            <ContractAddressModal address={context.contract_address} is_extended={*contract_address_modal_extended}
+            on_extend={change_addr_modal_visibility.clone()} arrow_id={*addr_modal_arrow_id} />
+
         </div>
+
+
+
     }
 }

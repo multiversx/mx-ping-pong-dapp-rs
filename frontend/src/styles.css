@@ -28,9 +28,27 @@
 .admin-panel-btns {
   display: flex;
   flex-direction: row;
-  padding: 5px 5px;
+  padding: 20px 5px;
   justify-content: space-between;
   gap: 5px;
+}
+
+.query-btns {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 5px;
+  gap: 10px;
+  height: auto;
+  width: 190px;
+}
+
+.transaction-btns {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 5px;
+  gap: 10px;
+  height: auto;
+  width: 190px;
 }
 
 .query-btn {
@@ -77,4 +95,160 @@
   background-color: #7d3e8e;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transform: scale(0.98);
+}
+
+#txStatusModal {
+    margin-top: 230px;
+    left: 20px;
+    bottom: 100px;
+    background-color: #b2b1b1;
+    text-align: left;
+    position: fixed;
+    width: 290px;
+    padding-bottom: 20px;
+    border-radius: 8px;
+    transition: opacity 0.3s ease;
+}
+
+#txStatusModal.show {
+    opacity: 1;
+}
+
+#txStatusModal.hide {
+    opacity: 0;
+}
+
+#statusContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-left: 10px;
+  font-size: 15px;
+  gap: 35px;
+}
+
+#txStatusModal h2 {
+  margin-left: 10px;
+  padding-top: 0px;
+}
+
+.close-btn {
+  background-color: transparent;
+  display: inline-flex;
+  color: #616161;
+  float: right;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-right: 5px;
+  margin-top: 17px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+}
+
+.close-btn:hover {
+  color: black;
+  text-decoration: none;
+}
+
+.iconClose {
+  width: 20px;
+  height: 20px;
+}
+
+.iconStatus {
+  width: 40px;
+  height: 40px;
+}
+
+#contractAddrModal {
+  background-color: #adabab;
+  display: flex;
+  flex-direction: column;
+  width: 500px;
+  padding-left: 10px;
+  padding-right: 20px;
+  border-radius: 8px;
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  height: 120px;
+  transition: background-color 0.3s ease, color 0.3s ease; 
+}
+
+#contractAddrModal.compressed {
+  background-color: transparent;
+}
+
+#contractAddrModal.compressed #addrContainer {
+  display: none;
+}
+
+
+
+#addrHeaderContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-left: 10px;
+  font-size: 15px;
+  gap: 15px;
+}
+
+.toggleButton {
+  position: relative;
+  width: auto;
+  height: auto;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.3s ease;
+  padding: 0;
+  margin: 0;
+
+}
+
+.toggleButton:hover {
+  transform: scale(1.1);
+}
+
+.toggleArrow {
+  width: 30px;
+  height: 30px;
+}
+
+.redirectIcon {
+  width: 25px;
+  height: 25px;
+  transition: transform 0.3s ease;
+  color: black;
+  padding-top: 4px;
+}
+
+.redirectIcon:hover {
+  transform: scale(1.1);
+}
+
+.redirectIcon.visible {
+  display: inline;
+}
+
+.redirectIcon.hidden {
+  display: none;
+}
+
+#contractAddrModal.compressed .redirectIcon {
+  display: none;
+}
+
+.redirectLink {
+  cursor: pointer;
+}
+
+#addrContainer {
+  padding-left: 20px;
 }

@@ -12,10 +12,12 @@ pub struct ConfigContext {
     pub timestamp: String,
     pub max_funds: String,
     pub ping_amount: String,
+    pub contract_address: String,
     pub set_deadline: Callback<String>,
     pub set_timestamp: Callback<String>,
     pub set_max_funds: Callback<String>,
     pub set_ping_amount: Callback<String>,
+    pub set_contract_address: Callback<String>,
     pub set_config: Callback<Config>,
 }
 
@@ -27,10 +29,12 @@ impl Default for ConfigContext {
             timestamp: String::new(),
             max_funds: String::new(),
             ping_amount: String::new(),
+            contract_address: String::new(),
             set_deadline: Callback::noop(),
             set_timestamp: Callback::noop(),
             set_max_funds: Callback::noop(),
             set_ping_amount: Callback::noop(),
+            set_contract_address: Callback::noop(),
             set_config: Callback::noop(),
         }
     }
@@ -43,6 +47,7 @@ pub fn config_provider(props: &ChildrenProps) -> Html {
     let timestamp: UseStateHandle<String> = use_state(String::new);
     let max_funds: UseStateHandle<String> = use_state(String::new);
     let ping_amount: UseStateHandle<String> = use_state(String::new);
+    let contract_address = use_state(String::new);
 
     let set_deadline = {
         let deadline = deadline.clone();
@@ -80,19 +85,29 @@ pub fn config_provider(props: &ChildrenProps) -> Html {
         })
     };
 
+    let set_contract_address = {
+        let contract_address = contract_address.clone();
+        Callback::from(move |new_contract_address: String| {
+            contract_address.set(new_contract_address);
+        })
+    };
+
     html! {
         <ContextProvider<ConfigContext> context = {
-            ConfigContext { 
+            ConfigContext {
             config: (*config).clone(),
             deadline: (*deadline).clone(),
             timestamp: (*timestamp).clone(),
             max_funds: (*max_funds).clone(),
             ping_amount: (*ping_amount).clone(),
+            contract_address: (*contract_address).clone(),
             set_deadline,
             set_timestamp,
             set_max_funds,
             set_ping_amount,
-            set_config}}>
+            set_contract_address,
+            set_config,
+            }}>
             { for props.children.iter() }
         </ContextProvider<ConfigContext>>
     }

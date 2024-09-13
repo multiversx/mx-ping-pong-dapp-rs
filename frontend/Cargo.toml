@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+gloo-timers = "0.3.0"
 console_log = "0.2"
 log = "0.4"
 reqwest = { version = "0.12", features = ["blocking", "json"] }
@@ -12,5 +13,14 @@ serde_json = "1.0"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 yew = { version = "0.20.0", features = ["csr"] }
-yew_icons = { version = "0.7.3", features = ["BootstrapHeartFill"] }
+yew_icons = { version = "0.7.3", features = [
+    "BootstrapHeartFill",
+    "FontAwesomeSolidXmark",
+    "FontAwesomeRegularHourglass",
+    "FontAwesomeSolidCircleCheck",
+    "FontAwesomeRegularCircleXmark",
+    "LucideMaximize2",
+    "LucideMinimize2",
+    "OcticonsLinkExternal16",
+] }
 yew-router = { version = "0.17.0" }
