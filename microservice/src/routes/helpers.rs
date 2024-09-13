@@ -1,18 +1,44 @@
+use core::panic;
+
 use chrono::DateTime;
 use multiversx_sc_snippets::imports::RustBigUint;
 
-pub fn denominate(value: f64) -> u128 {
-    let multiplier: f64 = 10f64.powi(18);
-    let result = value * multiplier;
-
-    if result < 0.0 {
-        panic!("Negative values are not allowed.");
+pub fn denominate(value: f64) -> String {
+    let mut nominated_value = value.to_string();
+    match nominated_value.chars().nth(0) {
+        Some('0') => {
+            if nominated_value.chars().nth(1).unwrap() != '.' {
+                return "0".to_string();
+            }
+        }
+        Some('-') => {
+            panic!("Negative values are not allowed.");
+        }
+        _ => {}
     }
-    if result > u128::MAX as f64 {
-        panic!("Result is too large to fit in u128.");
-    }
 
-    result as u128
+    if nominated_value.contains('.') {
+        let split_nominated: Vec<&str> = nominated_value.split('.').collect();
+        if split_nominated.len() != 2 {
+            panic!("Invalid nominated value.");
+        } else {
+            let integer_part = split_nominated[0].to_string();
+            let mut decimal_part = split_nominated[1].to_string();
+
+            if 18usize > decimal_part.len() {
+                let zeros_left = 18usize - decimal_part.len();
+                decimal_part.push_str(&"0".repeat(zeros_left));
+            } else if 18usize < decimal_part.len() {
+                decimal_part = decimal_part[..18].to_string();
+            }
+
+            let result = integer_part + &decimal_part;
+            result.trim_start_matches('0').to_string()
+        }
+    } else {
+        nominated_value.push_str(&"0".repeat(18));
+        nominated_value
+    }
 }
 
 pub fn nominated_str(value: RustBigUint) -> String {
