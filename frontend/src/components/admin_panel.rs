@@ -1,10 +1,10 @@
-use std::rc::Rc;
+use std::{fmt::format, rc::Rc};
 use yew::prelude::*;
 
 use crate::{
     components::Button,
     context::ConfigContext,
-    requests::{query, transaction, QueryType},
+    requests::{query, transaction, TransactionType, QueryType},
 };
 
 #[function_component(AdminPanel)]
@@ -86,7 +86,7 @@ pub fn admin_panel() -> Html {
         let transaction_result = transaction_result.clone();
         let config = Rc::clone(&context.config);
 
-        Callback::from(move |_| {
+        Callback::from(move |tx_type: TransactionType| {
             let transaction_result = transaction_result.clone();
             let config = Rc::clone(&config);
 
@@ -94,13 +94,37 @@ pub fn admin_panel() -> Html {
 
             wasm_bindgen_futures::spawn_local(async move {
                 let config = config.borrow();
-                match transaction::ping(&config).await {
-                    Ok(result) => {
-                        transaction_result.set(result);
-                    }
-                    Err(err) => {
-                        log::error!("Transaction failed: {:?}", err);
-                    }
+                match tx_type {
+                    TransactionType::Ping => match transaction::ping(&config).await {
+                        Ok(result) => {
+                            transaction_result.set(format!(
+                                "Pinged successfully with {} EGLD",
+                                result["amount"].as_str().unwrap()
+                            ));
+                        }
+                        Err(err) => {
+                            log::error!("Transaction failed: {:?}", err);
+                            transaction_result.set(format!("Ping failed!"));
+                        }
+                    },
+                    TransactionType::Pong => match transaction::pong(&config).await {
+                        Ok(result) => {
+                            transaction_result.set(format!("Ponged successfully"));
+                        }
+                        Err(err) => {
+                            log::error!("Transaction failed: {:?}", err);
+                            transaction_result.set(format!("Pong failed!"));
+                        }
+                    },
+                    TransactionType::PongAll => match transaction::pong_all(&config).await {
+                        Ok(result) => {
+                            transaction_result.set(format!("Ponged all successfully"));
+                        }
+                        Err(err) => {
+                            log::error!("Transaction failed: {:?}", err);
+                            transaction_result.set(format!("Pong all failed!"));
+                        }
+                    },
                 }
             });
         })
@@ -120,10 +144,14 @@ pub fn admin_panel() -> Html {
                 let config = config.borrow();
                 match transaction::sc_setup(&config).await {
                     Ok(result) => {
-                        setup_result.set(result);
+                        setup_result.set(format!(
+                            "New deployed address: {}",
+                            result["address"].as_str().unwrap()
+                        ));
                     }
                     Err(err) => {
                         log::error!("SC Setup failed: {:?}", err);
+                        setup_result.set(format!("SC Setup failed!"));
                     }
                 }
             });
@@ -139,7 +167,9 @@ pub fn admin_panel() -> Html {
             <Button name = "Max Funds" class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::MaxFunds)} />
             <Button name = "Ping Amount" class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::PingAmount)} />
             // <Button name = "User Addresses" class_name = "query-btn" button_type="button" on_click={query_service.reform(|_| QueryType::UserAddresses)} />
-            <Button name = "Transaction" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.clone()} />
+            <Button name = "Ping" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Ping)} />
+            <Button name = "Pong" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Pong)} />
+            <Button name = "Pong all" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::PongAll)} />
             <Button name = "SC Setup" class_name = "transaction-btn" button_type = "button" on_click={sc_setup_service.clone()} />
         </div>
             {

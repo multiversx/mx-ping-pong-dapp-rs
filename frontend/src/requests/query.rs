@@ -13,15 +13,7 @@ pub enum QueryType {
 pub async fn get_deadline(config: &Config) -> Result<String, String> {
     let query_url = &config.query_url;
     let dest = &config.dest;
-    let endpoint = format!("http://{dest}{query_url}");
-
-    request::get_request("deadline", &endpoint).await
-}
-
-pub async fn get_timestamp(config: &Config) -> Result<String, String> {
-    let query_url = &config.query_url;
-    let dest = &config.dest;
-    let endpoint = format!("http://{dest}{query_url}");
+    let full_endpoint = format!("http://{dest}{query_url}/deadline");
 
     request::get_request("timestamp", &endpoint).await
 }
