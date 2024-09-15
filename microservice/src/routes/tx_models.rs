@@ -37,7 +37,7 @@ impl DeployResponse {
         }
     }
 
-    pub fn send(&self) -> HttpResponse {
+    pub fn response(&self) -> HttpResponse {
         HttpResponse::Ok().json(self)
     }
 }
@@ -64,7 +64,7 @@ impl PingResponse {
         Self { response }
     }
 
-    pub fn send(&self) -> HttpResponse {
+    pub fn response(&self) -> HttpResponse {
         HttpResponse::Ok().json(self)
     }
 }
@@ -90,7 +90,7 @@ impl PongResponse {
         Self { response }
     }
 
-    pub fn send(&self) -> HttpResponse {
+    pub fn response(&self) -> HttpResponse {
         HttpResponse::Ok().json(self)
     }
 }

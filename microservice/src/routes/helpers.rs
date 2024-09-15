@@ -51,3 +51,26 @@ pub fn readable_timestamp(timestamp: u64) -> String {
         DateTime::from_timestamp(timestamp as i64, 0).expect("Failed to parse timestamp");
     datetime.to_string()
 }
+
+#[tokio::test]
+async fn test_nominate() {
+    let mut denominated_value = RustBigUint::from(1_000_000_000u128);
+    let result = nominated_str(denominated_value);
+    assert_eq!(result, "0.000000001");
+
+    denominated_value = RustBigUint::from(1_000_000_000_000_000_000u128);
+    let result = nominated_str(denominated_value);
+    assert_eq!(result, "1.0000");
+
+    denominated_value = RustBigUint::from(1_000_000_000_000_000_001u128);
+    let result = nominated_str(denominated_value);
+    assert_eq!(result, "1.0000");
+
+    denominated_value = RustBigUint::from(1000000000004141411u128);
+    let result = nominated_str(denominated_value);
+    assert_eq!(result, "1.0000");
+
+    denominated_value = RustBigUint::from(100456231123000000000u128);
+    let result = nominated_str(denominated_value);
+    assert_eq!(result, "100.456231123");
+}

@@ -58,11 +58,10 @@ pub async fn setup_contract(
         .unwrap();
 
     // Invalidate values corresponding to previous deployed contract
-    let _: () = con.del("user_addresses").await.unwrap();
-    let _: () = con.del("ping_amount").await.unwrap();
-    let _: () = con.del("max_funds").await.unwrap();
-    let _: () = con.del("deadline").await.unwrap();
-    let _: () = con.del("timestamp").await.unwrap();
+    let _: () = redis::cmd("FLUSHALL")
+        .query_async(&mut con)
+        .await
+        .expect("Failed to flush Redis");
 
     format!("new address: {new_address_bech32}")
 }
