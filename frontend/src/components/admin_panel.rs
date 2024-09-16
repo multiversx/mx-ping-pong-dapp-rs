@@ -8,6 +8,11 @@ use crate::{
     requests::{query, transaction, QueryType, TransactionType},
 };
 
+pub enum ModalType {
+    DeployModal,
+    PingModal,
+}
+
 #[function_component(AdminPanel)]
 pub fn admin_panel() -> Html {
     let context = use_context::<ConfigContext>().expect("Failed to get config context");
@@ -21,6 +26,9 @@ pub fn admin_panel() -> Html {
     let contract_address_modal_extended = use_state(|| false);
     let addr_modal_arrow_id = use_state(|| IconId::LucideMaximize2);
     let is_loading: UseStateHandle<bool> = use_state(|| false);
+
+    let deploy_modal_visible = use_state(|| false);
+    let ping_deploy_modal_visible = use_state(|| false);
 
     let query_service = {
         let config = Rc::clone(&context.config);
@@ -259,6 +267,21 @@ pub fn admin_panel() -> Html {
         })
     };
 
+    let toggle_tx_form_modal = {
+        let deploy_modal_visible = deploy_modal_visible.clone();
+        let ping_modal_visible = ping_deploy_modal_visible.clone();
+        Callback::from(move |modal_type: ModalType| match modal_type {
+            ModalType::DeployModal => {
+                let deploy_modal_visible = deploy_modal_visible.clone();
+                deploy_modal_visible.set(!*deploy_modal_visible);
+            }
+            ModalType::PingModal => {
+                let ping_modal_visible = ping_modal_visible.clone();
+                ping_modal_visible.set(!*ping_modal_visible);
+            }
+        })
+    };
+
     let change_addr_modal_visibility = {
         let contract_address_modal_extended = contract_address_modal_extended.clone();
         let addr_modal_arrow_id = addr_modal_arrow_id.clone();
@@ -291,7 +314,7 @@ pub fn admin_panel() -> Html {
                 <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Ping)} disabled={*is_loading} text_content={"Ping".to_string()} />
                 <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Pong)} disabled={*is_loading} text_content={"Pong".to_string()} />
                 <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::PongAll)} disabled={*is_loading} text_content={"PongAll".to_string()} />
-                <Button class_name = "transaction-btn" button_type = "button" on_click={sc_setup_service.clone()} disabled={*is_loading} text_content={"SC Setup".to_string()} />
+                <Button class_name = "transaction-btn" button_type = "button" on_click={toggle_tx_form_modal.reform(|_| ModalType::DeployModal)} disabled={*is_loading} text_content={"SC Setup".to_string()} />
             </div>
         </div>
             {
@@ -384,7 +407,9 @@ pub fn admin_panel() -> Html {
             <ContractAddressModal address={context.contract_address} is_extended={*contract_address_modal_extended}
             on_extend={change_addr_modal_visibility.clone()} arrow_id={*addr_modal_arrow_id} />
 
-            <TxFormModal tx_name={"Ping".to_string()} on_close={close_tx_status.clone()} on_submit={transaction_service.reform(|_| TransactionType::Ping)} is_visible={false} input_fields={vec!["Amount".to_string(), "Sender".to_string()]} />
+            <TxFormModal tx_name={"Deploy".to_string()} on_close={toggle_tx_form_modal.reform(|_| ModalType::DeployModal)} on_submit={sc_setup_service.clone()} is_visible={*deploy_modal_visible}
+                        input_fields={vec!["Ping amount".to_string(), "Max funds".to_string(), "Activation timestamp".to_string(), "Duration".to_string(), "Deployer".to_string()]}
+            />
 
         </div>
 
