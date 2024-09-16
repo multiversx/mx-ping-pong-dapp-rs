@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{collections::HashMap, rc::Rc};
 use yew::prelude::*;
 use yew_icons::IconId;
 
@@ -121,7 +121,7 @@ pub fn admin_panel() -> Html {
     let transaction_service = {
         let transaction_result = transaction_result.clone();
         let config = Rc::clone(&context.config);
-        let modal_visible = tx_status_modal_visible.clone();
+        let tx_status_modal_visible = tx_status_modal_visible.clone();
         let tx_status = tx_status.clone();
         let status_icon_id = status_icon_id.clone();
         let is_loading = is_loading.clone();
@@ -129,7 +129,7 @@ pub fn admin_panel() -> Html {
         Callback::from(move |tx_type: TransactionType| {
             let transaction_result = transaction_result.clone();
             let config = Rc::clone(&config);
-            let modal_visible = modal_visible.clone();
+            let tx_status_modal_visible = tx_status_modal_visible.clone();
             let tx_status = tx_status.clone();
             let status_icon_id = status_icon_id.clone();
             let is_loading = is_loading.clone();
@@ -142,7 +142,7 @@ pub fn admin_panel() -> Html {
             is_loading.set(true);
 
             log::info!("Transaction request triggered");
-            modal_visible.set(true);
+            tx_status_modal_visible.set(true);
             tx_status.set("In progress...".to_string());
             status_icon_id.set(IconId::FontAwesomeRegularHourglass);
 
@@ -156,14 +156,14 @@ pub fn admin_panel() -> Html {
                                 "Pinged successfully with {} EGLD",
                                 result["amount"].as_str().unwrap()
                             ));
-                            modal_visible.set(true);
+                            tx_status_modal_visible.set(true);
                             tx_status.set("Success".to_string());
                             status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
                         }
                         Err(err) => {
                             log::error!("Transaction failed: {:?}", err);
                             transaction_result.set("Ping failed!".to_string());
-                            modal_visible.set(true);
+                            tx_status_modal_visible.set(true);
                             tx_status.set("Failed".to_string());
                             status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
                         }
@@ -171,14 +171,14 @@ pub fn admin_panel() -> Html {
                     TransactionType::Pong => match transaction::pong(&config_borrowed).await {
                         Ok(_result) => {
                             transaction_result.set("Ponged successfully".to_string());
-                            modal_visible.set(true);
+                            tx_status_modal_visible.set(true);
                             tx_status.set("Success".to_string());
                             status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
                         }
                         Err(err) => {
                             log::error!("Transaction failed: {:?}", err);
                             transaction_result.set("Pong failed!".to_string());
-                            modal_visible.set(true);
+                            tx_status_modal_visible.set(true);
                             tx_status.set("Failed".to_string());
                             status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
                         }
@@ -187,14 +187,14 @@ pub fn admin_panel() -> Html {
                     {
                         Ok(_result) => {
                             transaction_result.set("Ponged all successfully".to_string());
-                            modal_visible.set(true);
+                            tx_status_modal_visible.set(true);
                             tx_status.set("Success".to_string());
                             status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
                         }
                         Err(err) => {
                             log::error!("Transaction failed: {:?}", err);
                             transaction_result.set("Pong all failed!".to_string());
-                            modal_visible.set(true);
+                            tx_status_modal_visible.set(true);
                             tx_status.set("Failed".to_string());
                             status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
                         }
@@ -208,20 +208,22 @@ pub fn admin_panel() -> Html {
     let sc_setup_service = {
         let setup_result = setup_result.clone();
         let config = Rc::clone(&context.config);
-        let modal_visible = tx_status_modal_visible.clone();
+        let tx_status_modal_visible = tx_status_modal_visible.clone();
         let tx_status = tx_status.clone();
         let status_icon_id = status_icon_id.clone();
         let set_contract_address = context.set_contract_address.clone();
         let is_loading = is_loading.clone();
+        let deploy_modal_visible = deploy_modal_visible.clone();
 
-        Callback::from(move |_| {
+        Callback::from(move |form_values: HashMap<String, String>| {
             let setup_result = setup_result.clone();
             let config = Rc::clone(&config);
-            let modal_visible = modal_visible.clone();
+            let tx_status_modal_visible = tx_status_modal_visible.clone();
             let tx_status = tx_status.clone();
             let status_icon_id = status_icon_id.clone();
             let set_contract_address = set_contract_address.clone();
             let is_loading = is_loading.clone();
+            let deploy_modal_visible = deploy_modal_visible.clone();
 
             if *is_loading {
                 log::info!("Transaction is already in progress");
@@ -230,27 +232,54 @@ pub fn admin_panel() -> Html {
 
             is_loading.set(true);
 
+            let ping_amount = form_values
+                .get("Ping amount")
+                .cloned()
+                .unwrap_or_else(|| "0".to_string());
+            let max_funds = form_values
+                .get("Max Funds")
+                .cloned()
+                .unwrap_or_else(|| "0".to_string());
+            let activation_timestamp = form_values
+                .get("Activation Timestamp")
+                .cloned()
+                .unwrap_or_else(|| "None".to_string());
+            let duration = form_values
+                .get("Duration")
+                .cloned()
+                .unwrap_or_else(|| "0".to_string());
+
+            deploy_modal_visible.set(false);
+
             log::info!("SC setup request triggered");
-            modal_visible.set(true);
+            tx_status_modal_visible.set(true);
             tx_status.set("In progress...".to_string());
             status_icon_id.set(IconId::FontAwesomeRegularHourglass);
 
             wasm_bindgen_futures::spawn_local(async move {
                 let config_borrowed = config.borrow().clone();
 
-                match transaction::sc_setup(&config_borrowed).await {
+                match transaction::sc_setup(
+                    &config_borrowed,
+                    ping_amount,
+                    max_funds,
+                    activation_timestamp,
+                    duration,
+                )
+                .await
+                {
                     Ok(result) => {
                         let new_addr = result["address"].as_str().unwrap().to_string();
                         setup_result.set(new_addr.clone());
                         set_contract_address.emit(new_addr);
-                        modal_visible.set(true);
+                        tx_status_modal_visible.set(true);
                         tx_status.set("Success".to_string());
                         status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
                     }
                     Err(err) => {
                         log::error!("SC Setup failed: {:?}", err);
                         setup_result.set("SC Setup failed!".to_string());
-                        modal_visible.set(true);
+                        tx_status_modal_visible.set(true);
                         tx_status.set("Failed".to_string());
                         status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
                     }
@@ -408,7 +437,11 @@ pub fn admin_panel() -> Html {
             on_extend={change_addr_modal_visibility.clone()} arrow_id={*addr_modal_arrow_id} />
 
             <TxFormModal tx_name={"Deploy".to_string()} on_close={toggle_tx_form_modal.reform(|_| ModalType::DeployModal)} on_submit={sc_setup_service.clone()} is_visible={*deploy_modal_visible}
-                        input_fields={vec!["Ping amount".to_string(), "Max funds".to_string(), "Activation timestamp".to_string(), "Duration".to_string(), "Deployer".to_string()]}
+                        input_fields={vec!["Ping amount".to_string(), "Max funds".to_string(), "Activation timestamp".to_string(), "Duration".to_string()]}
+            />
+
+            <TxFormModal tx_name={"Ping".to_string()} on_close={toggle_tx_form_modal.reform(|_| ModalType::PingModal)} on_submit={transaction_service.reform(|_| TransactionType::Ping)} is_visible={*ping_deploy_modal_visible}
+                        input_fields={vec!["Amount".to_string()]}
             />
 
         </div>

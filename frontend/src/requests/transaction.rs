@@ -23,19 +23,27 @@ pub async fn ping(config: &Config) -> Result<Value, Value> {
     request::post_request("ping", &endpoint, Some(&body)).await
 }
 
-pub async fn sc_setup(config: &Config) -> Result<Value, Value> {
+pub async fn sc_setup(
+    config: &Config,
+    ping_amount: String,
+    max_funds: String,
+    activation_timestamp: String,
+    duration: String,
+) -> Result<Value, Value> {
     let setup_url = &config.setup_url;
     let dest = &config.dest;
     let endpoint = format!("http://{dest}{setup_url}");
 
-    let body = json!(
-        {
-            "ping_amount": 0.001,
-            "max_funds": 100,
-            "activation_timestamp": "None",
-            "duration": 60,
-            "deployer": "erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th"
+    let ping_amount = ping_amount.parse::<f64>().unwrap();
+    let max_funds = max_funds.parse::<f64>().unwrap();
+    let duration = duration.parse::<u64>().unwrap();
 
+    let body = json!({
+        "ping_amount": ping_amount,
+        "max_funds": max_funds,
+        "activation_timestamp": activation_timestamp,
+        "duration": duration,
+        "deployer": "erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th"
     });
 
     request::post_request("sc_setup", &endpoint, Some(&body)).await
