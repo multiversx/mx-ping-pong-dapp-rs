@@ -1,6 +1,6 @@
 use std::rc::Rc;
 use yew::prelude::*;
-use yew_icons::{Icon, IconId};
+use yew_icons::IconId;
 
 use crate::{
     components::{Button, ContractAddressModal, TxStatusModal},
@@ -8,18 +8,16 @@ use crate::{
     requests::{query, transaction, QueryType, TransactionType},
 };
 
-use super::contract_address_modal;
-
 #[function_component(AdminPanel)]
 pub fn admin_panel() -> Html {
     let context = use_context::<ConfigContext>().expect("Failed to get config context");
 
-    let setup_result = use_state(|| String::new());
-    let transaction_result = use_state(|| String::new());
+    let setup_result = use_state(String::new);
+    let transaction_result = use_state(String::new);
     let tx_status_modal_visible = use_state(|| false);
-    let tx_status = use_state(|| String::new());
+    let tx_status = use_state(String::new);
     let status_icon_id = use_state(|| IconId::FontAwesomeRegularHourglass);
-    let user_addresses_result = use_state(|| String::new());
+    let user_addresses_result = use_state(String::new);
     let contract_address_modal_extended = use_state(|| false);
     let addr_modal_arrow_id = use_state(|| IconId::LucideMaximize2);
     let is_loading: UseStateHandle<bool> = use_state(|| false);
@@ -283,35 +281,17 @@ pub fn admin_panel() -> Html {
         <h2>{"Ping Pong Admin Panel"}</h2>
         <div class = "admin-panel-btns">
             <div class = "query-btns">
-                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::Deadline)}>
-                    {"Deadline"}
-                </Button>
-                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::Timestamp)}>
-                    {"Timestamp"}
-                </Button>
-                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::MaxFunds)}>
-                    {"Max Funds"}
-                </Button>
-                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::PingAmount)}>
-                    {"Ping Amount"}
-                </Button>
-                <Button class_name = "query-btn" button_type="button" on_click={query_service.reform(|_| QueryType::UserAddresses)}>
-                    {"User Addresses"}
-                </Button>
+                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::Deadline)} text_content={"Deadline".to_string()} />
+                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::Timestamp)} text_content={"Timestamp".to_string()} />
+                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::MaxFunds)} text_content={"Max Funds".to_string()} />
+                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::PingAmount)} text_content={"Ping Amount".to_string()} />
+                <Button class_name = "query-btn" button_type="button" on_click={query_service.reform(|_| QueryType::UserAddresses)} text_content={"User Addresses".to_string()} />
             </div>
             <div class = "transaction-btns">
-                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Ping)} disabled={*is_loading}>
-                    {"Ping"}
-                </Button>
-                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Pong)} disabled={*is_loading}>
-                    {"Pong"}
-                </Button>
-                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::PongAll)} disabled={*is_loading}>
-                    {"Pong all"}
-                </Button>
-                <Button class_name = "transaction-btn" button_type = "button" on_click={sc_setup_service.clone()} disabled={*is_loading}>
-                    {"SC Setup"}
-                </Button>
+                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Ping)} disabled={*is_loading} text_content={"Ping".to_string()} />
+                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Pong)} disabled={*is_loading} text_content={"Pong".to_string()} />
+                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::PongAll)} disabled={*is_loading} text_content={"PongAll".to_string()} />
+                <Button class_name = "transaction-btn" button_type = "button" on_click={sc_setup_service.clone()} disabled={*is_loading} text_content={"SC Setup".to_string()} />
             </div>
         </div>
             {
@@ -399,9 +379,7 @@ pub fn admin_panel() -> Html {
                 }
             }
 
-            <TxStatusModal status={(*tx_status).clone()} on_close={close_tx_status.clone()} is_visible={*tx_status_modal_visible}>
-                <Icon class="iconStatus" icon_id={*status_icon_id} />
-            </TxStatusModal>
+            <TxStatusModal status={(*tx_status).clone()} on_close={close_tx_status.clone()} is_visible={*tx_status_modal_visible} icon={*status_icon_id} />
 
             <ContractAddressModal address={context.contract_address} is_extended={*contract_address_modal_extended}
             on_extend={change_addr_modal_visibility.clone()} arrow_id={*addr_modal_arrow_id} />

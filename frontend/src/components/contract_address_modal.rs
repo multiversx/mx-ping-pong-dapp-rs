@@ -1,7 +1,8 @@
 use crate::components::Button;
-use _ContractAddressModalProps::address;
 use yew::prelude::*;
 use yew_icons::{Icon, IconId};
+
+const DEVNET_ACCOUNTS_LINK: &str = "https://devnet-explorer.multiversx.com/accounts";
 
 #[derive(Properties, PartialEq)]
 pub struct ContractAddressModalProps {
@@ -21,10 +22,7 @@ pub fn contract_address_modal(props: &ContractAddressModalProps) -> Html {
 
     let (explorer_link, redirect_visible) = if props.address.starts_with("erd") {
         (
-            format!(
-                "https://devnet-explorer.multiversx.com/accounts/{}",
-                props.address
-            ),
+            format!("{}/{}", DEVNET_ACCOUNTS_LINK, props.address),
             "visible".to_string(),
         )
     } else {
@@ -34,9 +32,7 @@ pub fn contract_address_modal(props: &ContractAddressModalProps) -> Html {
     html! {
         <div id="contractAddrModal" class={visibility_class_name}>
             <div id="addrHeaderContainer">
-                <Button class_name="toggleButton" button_type="button" on_click={props.on_extend.clone()}>
-                    <Icon class="toggleArrow" icon_id={props.arrow_id}/>
-                </Button>
+                <Button class_name="toggle-button" button_type="button" on_click={props.on_extend.clone()} icon={props.arrow_id} icon_class={"toggle-arrow".to_string()} />
                 <h2>{ "Contract Address" }</h2>
                 <a
                     id="redirectLink"
@@ -44,7 +40,7 @@ pub fn contract_address_modal(props: &ContractAddressModalProps) -> Html {
                     href={explorer_link}
                     title="MultiversX Explorer"
                     >
-                    <Icon class={classes!(redirect_visible, "redirectIcon")} icon_id={IconId::OcticonsLinkExternal16}/>
+                    <Icon class={classes!(redirect_visible, "redirect-icon")} icon_id={IconId::OcticonsLinkExternal16}/>
                 </a>
             </div>
             <div id="addrContainer">

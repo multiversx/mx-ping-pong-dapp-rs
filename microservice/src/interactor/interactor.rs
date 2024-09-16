@@ -54,7 +54,6 @@ impl Drop for State {
 pub struct ContractInteract {
     pub interactor: Interactor,
     pub wallet_address: Address,
-    pub wallet_address2: Address,
     pub contract_code: BytesValue,
     pub state: State,
 }
@@ -63,8 +62,6 @@ impl ContractInteract {
     pub async fn new() -> Self {
         let mut interactor = Interactor::new(GATEWAY).await;
         let wallet_address = interactor.register_wallet(test_wallets::alice());
-        // Second address was added for testing
-        let wallet_address2 = interactor.register_wallet(test_wallets::eve());
 
         let contract_code = BytesValue::interpret_from(
             "mxsc:microservice/src/shared_state/ping-pong-egld.mxsc.json",
@@ -74,7 +71,6 @@ impl ContractInteract {
         ContractInteract {
             interactor,
             wallet_address,
-            wallet_address2,
             contract_code,
             state: State::load_state(),
         }
