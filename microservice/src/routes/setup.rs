@@ -1,22 +1,31 @@
-use actix_web::{post, Responder};
+use actix_web::{get, post, Responder};
+use actix_web::{web, HttpResponse};
 use imports::{bech32, Bech32Address, OptionalValue, ReturnsNewAddress, RustBigUint};
 use interactor::ContractInteract;
+use serde_json::json;
 
 use crate::routes::proxy;
+use crate::routes::tx_models::*;
 use multiversx_sc_snippets::*;
+use redis::Client;
 
-#[post("/setup")]
+#[post("")]
 pub async fn setup_contract(
+    body: web::Json<DeployReqBody>,
+    redis_client: web::Data<Client>,
 ) -> impl Responder {
     let mut contract_interact = ContractInteract::new().await;
 
-    let contract_code = contract_interact.contract_code.clone();
-    let wallet_address = contract_interact.wallet_address.clone();
+    let (amount, max_funds, _activation_timestamp, duration, deployer) =
+        body.get_tx_sending_values();
 
-    let ping_amount = RustBigUint::from(5u128);
-    let duration_in_seconds = 10u64;
-    let opt_activation_timestamp = Option::Some(0u64);
-    let max_funds = OptionalValue::Some(RustBigUint::from(100_000u128));
+    let contract_code = contract_interact.contract_code.clone();
+    let wallet_address = Bech32Address::from_bech32_string(deployer);
+
+    let ping_amount = RustBigUint::from(amount);
+    let duration_in_seconds = duration;
+    let opt_activation_timestamp: Option<u64> = None;
+    let max_funds = OptionalValue::Some(RustBigUint::from(max_funds));
 
     let new_address = contract_interact
         .interactor
@@ -43,5 +52,28 @@ pub async fn setup_contract(
             new_address_bech32.clone(),
         ));
 
+    let mut con = redis_client
+        .get_multiplexed_async_connection()
+        .await
+        .unwrap();
+
+    // Invalidate values corresponding to previous deployed contract
+    let _: () = redis::cmd("FLUSHALL")
+        .query_async(&mut con)
+        .await
+        .expect("Failed to flush Redis");
+
     format!("new address: {new_address_bech32}")
+}
+
+#[get("/contract_address")]
+pub async fn get_contract_address() -> impl Responder {
+    let contract_interact = ContractInteract::new().await;
+
+    HttpResponse::Ok()
+        .json(json!({"contract_address": contract_interact.state.current_address().to_string()}))
+}
+
+pub fn setup_configuration(cfg: &mut web::ServiceConfig) {
+    cfg.service(setup_contract).service(get_contract_address);
 }

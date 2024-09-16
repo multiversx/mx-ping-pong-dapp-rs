@@ -1,17 +1,19 @@
 use actix_web::{post, web, Responder};
-use imports::{IgnoreValue, ReturnsRawResult};
+use imports::{Bech32Address, IgnoreValue, ReturnsRawResult};
 use interactor::ContractInteract;
+use redis::{AsyncCommands, Client};
 
-use crate::routes::proxy;
+use crate::routes::{proxy, tx_models::*};
 use multiversx_sc_snippets::*;
 
 #[post("/ping")]
-pub async fn ping() -> impl Responder {
+pub async fn ping(body: web::Json<PingReqBody>, redis_client: web::Data<Client>) -> impl Responder {
     let mut contract_interact = ContractInteract::new().await;
+    let (amount, sender) = body.get_tx_sending_values();
 
+    let wallet_address = Bech32Address::from_bech32_string(sender);
     let current_address = contract_interact.state.current_address().clone();
-    let wallet_address = contract_interact.wallet_address.clone();
-    let ping_amount = 5u64;
+    let ping_amount = amount as u64;
     let _data = IgnoreValue;
 
     let response = contract_interact
@@ -28,6 +30,13 @@ pub async fn ping() -> impl Responder {
         .run()
         .await;
 
+    let mut con = redis_client
+        .get_multiplexed_async_connection()
+        .await
+        .unwrap();
+
+    let _: () = con.del("user_addresses").await.unwrap();
+
     format!(
         "successfully pinged with amount {:#?}: {:?}",
         ping_amount, response
@@ -35,11 +44,12 @@ pub async fn ping() -> impl Responder {
 }
 
 #[post("/pong")]
-pub async fn pong() -> impl Responder {
+pub async fn pong(body: web::Json<PongReqBody>) -> impl Responder {
     let mut contract_interact = ContractInteract::new().await;
+    let sender = body.get_tx_sending_values();
 
+    let wallet_address = Bech32Address::from_bech32_string(sender);
     let current_address = contract_interact.state.current_address().clone();
-    let wallet_address = contract_interact.wallet_address.clone();
 
     let response = contract_interact
         .interactor
@@ -60,7 +70,6 @@ pub async fn pong() -> impl Responder {
 #[post("/pong_all")]
 pub async fn pong_all() -> impl Responder {
     let mut contract_interact = ContractInteract::new().await;
-
     let wallet_address = contract_interact.wallet_address.clone();
     let current_address = contract_interact.state.current_address().clone();
 
