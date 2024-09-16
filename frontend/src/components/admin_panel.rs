@@ -3,7 +3,7 @@ use yew::prelude::*;
 use yew_icons::IconId;
 
 use crate::{
-    components::{Button, ContractAddressModal, TxStatusModal},
+    components::{Button, ContractAddressModal, TxFormModal, TxStatusModal},
     context::ConfigContext,
     requests::{query, transaction, QueryType, TransactionType},
 };
@@ -383,6 +383,8 @@ pub fn admin_panel() -> Html {
 
             <ContractAddressModal address={context.contract_address} is_extended={*contract_address_modal_extended}
             on_extend={change_addr_modal_visibility.clone()} arrow_id={*addr_modal_arrow_id} />
+
+            <TxFormModal tx_name={"Ping".to_string()} on_close={close_tx_status.clone()} on_submit={transaction_service.reform(|_| TransactionType::Ping)} is_visible={false} input_fields={vec!["Amount".to_string(), "Sender".to_string()]} />
 
         </div>
 
