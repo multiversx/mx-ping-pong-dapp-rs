@@ -237,11 +237,11 @@ pub fn admin_panel() -> Html {
                 .cloned()
                 .unwrap_or_else(|| "0".to_string());
             let max_funds = form_values
-                .get("Max Funds")
+                .get("Max funds")
                 .cloned()
                 .unwrap_or_else(|| "0".to_string());
             let activation_timestamp = form_values
-                .get("Activation Timestamp")
+                .get("Activation timestamp")
                 .cloned()
                 .unwrap_or_else(|| "None".to_string());
             let duration = form_values

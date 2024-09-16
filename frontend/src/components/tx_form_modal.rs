@@ -36,6 +36,7 @@ pub fn tx_form_modal(props: &TxFormModalProps) -> Html {
         let on_submit = props.on_submit.clone();
         Callback::from(move |e: MouseEvent| {
             e.prevent_default();
+            println!("Form values: {:?}", (*form_values).clone());
             on_submit.emit((*form_values).clone());
         })
     };
