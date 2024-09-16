@@ -1,4 +1,4 @@
-use std::{fmt::format, rc::Rc};
+use std::rc::Rc;
 use yew::prelude::*;
 
 use crate::{
@@ -11,8 +11,8 @@ use crate::{
 pub fn admin_panel() -> Html {
     let context = use_context::<ConfigContext>().expect("Failed to get config context");
 
-    let setup_result = use_state(|| String::new());
-    let transaction_result = use_state(|| String::new());
+    let setup_result = use_state(String::new);
+    let transaction_result = use_state(String::new);
 
     let query_service = {
         let config = Rc::clone(&context.config);
@@ -25,8 +25,8 @@ pub fn admin_panel() -> Html {
             log::info!("Query request triggered");
 
             wasm_bindgen_futures::spawn_local(async move {
-                let config = config.borrow();
-                match query::get_deadline(&config).await {
+                let config_borrowed = config.borrow().clone();
+                match query::get_deadline(&config_borrowed).await {
                     Ok(result) => {
                         set_deadline.emit(result);
                     }
@@ -49,9 +49,9 @@ pub fn admin_panel() -> Html {
             log::info!("Transaction request triggered");
 
             wasm_bindgen_futures::spawn_local(async move {
-                let config = config.borrow();
+                let config_borrowed = config.borrow().clone();
                 match tx_type {
-                    TransactionType::Ping => match transaction::ping(&config).await {
+                    TransactionType::Ping => match transaction::ping(&config_borrowed).await {
                         Ok(result) => {
                             transaction_result.set(format!(
                                 "Pinged successfully with {} EGLD",
@@ -60,25 +60,25 @@ pub fn admin_panel() -> Html {
                         }
                         Err(err) => {
                             log::error!("Transaction failed: {:?}", err);
-                            transaction_result.set(format!("Ping failed!"));
+                            transaction_result.set("Ping failed!".to_string());
                         }
                     },
-                    TransactionType::Pong => match transaction::pong(&config).await {
-                        Ok(result) => {
-                            transaction_result.set(format!("Ponged successfully"));
+                    TransactionType::Pong => match transaction::pong(&config_borrowed).await {
+                        Ok(_result) => {
+                            transaction_result.set("Ponged successfully".to_string());
                         }
                         Err(err) => {
                             log::error!("Transaction failed: {:?}", err);
-                            transaction_result.set(format!("Pong failed!"));
+                            transaction_result.set("Pong failed!".to_string());
                         }
                     },
-                    TransactionType::PongAll => match transaction::pong_all(&config).await {
-                        Ok(result) => {
-                            transaction_result.set(format!("Ponged all successfully"));
+                    TransactionType::PongAll => match transaction::pong_all(&config_borrowed).await {
+                        Ok(_result) => {
+                            transaction_result.set("Ponged all successfully".to_string());
                         }
                         Err(err) => {
                             log::error!("Transaction failed: {:?}", err);
-                            transaction_result.set(format!("Pong all failed!"));
+                            transaction_result.set("Pong all failed!".to_string());
                         }
                     },
                 }
@@ -97,8 +97,8 @@ pub fn admin_panel() -> Html {
             log::info!("SC setup request triggered");
 
             wasm_bindgen_futures::spawn_local(async move {
-                let config = config.borrow();
-                match transaction::sc_setup(&config).await {
+                let config_borrowed = config.borrow().clone();
+                match transaction::sc_setup(&config_borrowed).await {
                     Ok(result) => {
                         setup_result.set(format!(
                             "New deployed address: {}",
@@ -107,7 +107,7 @@ pub fn admin_panel() -> Html {
                     }
                     Err(err) => {
                         log::error!("SC Setup failed: {:?}", err);
-                        setup_result.set(format!("SC Setup failed!"));
+                        setup_result.set("SC Setup failed!".to_string());
                     }
                 }
             });

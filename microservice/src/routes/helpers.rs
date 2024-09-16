@@ -1,11 +1,20 @@
 use core::panic;
+use std::cmp::Ordering;
 
 use chrono::DateTime;
 use multiversx_sc_snippets::imports::RustBigUint;
 
 pub fn denominate(value: f64) -> String {
+    print!("VALUE IS: {value}");
+    if value < 0.0 {
+        panic!("Negative values are not allowed.");
+    }
+    if value == 0.0 {
+        return "0".to_string();
+    }
+
     let mut nominated_value = value.to_string();
-    match nominated_value.chars().nth(0) {
+    match nominated_value.chars().next() {
         Some('0') => {
             if nominated_value.chars().nth(1).unwrap() != '.' {
                 return "0".to_string();
@@ -25,11 +34,16 @@ pub fn denominate(value: f64) -> String {
             let integer_part = split_nominated[0].to_string();
             let mut decimal_part = split_nominated[1].to_string();
 
-            if 18usize > decimal_part.len() {
-                let zeros_left = 18usize - decimal_part.len();
-                decimal_part.push_str(&"0".repeat(zeros_left));
-            } else if 18usize < decimal_part.len() {
-                decimal_part = decimal_part[..18].to_string();
+            match 18usize.cmp(&decimal_part.len()) {
+                Ordering::Less => {
+                    decimal_part = decimal_part[..18].to_string();
+                }
+                Ordering::Greater => {
+                    let zeros_left = 18usize - decimal_part.len();
+                    decimal_part.push_str(&"0".repeat(zeros_left));
+                }
+                Ordering::Equal => {
+                }
             }
 
             let result = integer_part + &decimal_part;
@@ -76,4 +90,81 @@ pub fn readable_timestamp(timestamp: u64) -> String {
     let datetime =
         DateTime::from_timestamp(timestamp as i64, 0).expect("Failed to parse timestamp");
     datetime.to_string()
+}
+
+#[tokio::test]
+async fn test_denominate_zero() {
+    let value = 0.0;
+    let result = denominate(value);
+    assert_eq!(result, "0");
+}
+
+#[tokio::test]
+async fn test_denominate_positive_integer() {
+    let value = 1234.0;
+    let result = denominate(value);
+    assert_eq!(result, "1234000000000000000000");
+}
+
+#[tokio::test]
+async fn test_denominate_positive_float() {
+    let value = 12.345678901234567;
+    let result = denominate(value);
+    assert_eq!(result, "12345678901234567000");
+}
+
+#[tokio::test]
+async fn test_denominate_max_precision() {
+    let value = 0.12345678901234568;
+    let result = denominate(value);
+    assert_eq!(result, "123456789012345680");
+}
+
+#[tokio::test]
+#[should_panic(expected = "Negative values are not allowed.")]
+async fn test_denominate_negative_value() {
+    let value = -1.0;
+    denominate(value);
+}
+
+#[tokio::test]
+async fn test_nominated_str_zero() {
+    let value = RustBigUint::from(0u32);
+    let result = nominated_str(value);
+    assert_eq!(result, "0");
+}
+
+#[tokio::test]
+async fn test_nominated_str_less_than_18_digits() {
+    let value = RustBigUint::from(12345u32);
+    let result = nominated_str(value);
+    assert_eq!(result, "0.000000000000012345");
+}
+
+#[tokio::test]
+async fn test_nominated_str_exactly_18_digits() {
+    let value = RustBigUint::parse_bytes(b"123456789012345678", 10).unwrap();
+    let result = nominated_str(value);
+    assert_eq!(result, "0.123456789012345678");
+}
+
+#[tokio::test]
+async fn test_nominated_str_more_than_18_digits() {
+    let value = RustBigUint::parse_bytes(b"123456789012345678901234567890", 10).unwrap();
+    let result = nominated_str(value);
+    assert_eq!(result, "123456789012.34567890123456789");
+}
+
+#[tokio::test]
+async fn test_nominated_str_trailing_zeros() {
+    let value = RustBigUint::parse_bytes(b"1000000000000000000000", 10).unwrap();
+    let result = nominated_str(value);
+    assert_eq!(result, "1000.0000");
+}
+
+#[tokio::test]
+async fn test_nominated_str_no_decimal() {
+    let value = RustBigUint::parse_bytes(b"1000000000000000000000000", 10).unwrap();
+    let result = nominated_str(value);
+    assert_eq!(result, "1000000.0000");
 }

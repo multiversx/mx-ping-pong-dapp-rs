@@ -63,7 +63,7 @@ pub struct PingResponse {
 impl PingResponse {
     pub fn new(response: String, amount: RustBigUint) -> Self {
         Self {
-            response: response,
+            response,
             amount: nominated_str(amount),
         }
     }
