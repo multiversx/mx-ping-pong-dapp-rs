@@ -52,8 +52,8 @@ pub fn readable_timestamp(timestamp: u64) -> String {
     datetime.to_string()
 }
 
-#[tokio::test]
-async fn test_nominate() {
+#[test]
+fn test_nominate() {
     let mut denominated_value = RustBigUint::from(1_000_000_000u128);
     let result = nominated_str(denominated_value);
     assert_eq!(result, "0.000000001");

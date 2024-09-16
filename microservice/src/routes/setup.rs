@@ -7,7 +7,7 @@ use serde_json::json;
 use crate::routes::proxy;
 use crate::routes::tx_models::*;
 use multiversx_sc_snippets::*;
-use redis::{AsyncCommands, Client};
+use redis::Client;
 
 #[post("")]
 pub async fn setup_contract(

@@ -27,7 +27,7 @@ impl Default for ConfigContext {
 #[function_component(ConfigProvider)]
 pub fn config_provider(props: &ChildrenProps) -> Html {
     let config = use_state(|| Rc::new(RefCell::new(Config::new())));
-    let deadline = use_state(|| String::new());
+    let deadline = use_state(String::new);
 
     let set_deadline = {
         let deadline = deadline.clone();

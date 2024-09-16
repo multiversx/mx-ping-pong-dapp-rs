@@ -29,6 +29,7 @@ pub struct DeployResponse {
     address: String,
 }
 
+#[allow(unused)]
 impl DeployResponse {
     pub fn new(tx_response: (String, String)) -> Self {
         Self {
@@ -59,6 +60,7 @@ pub struct PingResponse {
     response: String,
 }
 
+#[allow(unused)]
 impl PingResponse {
     pub fn new(response: String) -> Self {
         Self { response }
@@ -85,6 +87,7 @@ pub struct PongResponse {
     response: String,
 }
 
+#[allow(unused)]
 impl PongResponse {
     pub fn new(response: String) -> Self {
         Self { response }

@@ -11,8 +11,8 @@ use crate::{
 pub fn admin_panel() -> Html {
     let context = use_context::<ConfigContext>().expect("Failed to get config context");
 
-    let setup_result = use_state(|| String::new());
-    let transaction_result = use_state(|| String::new());
+    let setup_result = use_state(String::new);
+    let transaction_result = use_state(String::new);
 
     let query_service = {
         let config = Rc::clone(&context.config);
@@ -25,7 +25,7 @@ pub fn admin_panel() -> Html {
             log::info!("Query request triggered");
 
             wasm_bindgen_futures::spawn_local(async move {
-                let config = config.borrow();
+                let config = config.borrow().clone();
                 match query::get_deadline(&config).await {
                     Ok(result) => {
                         set_deadline.emit(result);
@@ -49,7 +49,7 @@ pub fn admin_panel() -> Html {
             log::info!("Transaction request triggered");
 
             wasm_bindgen_futures::spawn_local(async move {
-                let config = config.borrow();
+                let config = config.borrow().clone();
                 match transaction::ping(&config).await {
                     Ok(result) => {
                         transaction_result.set(result);
@@ -73,7 +73,7 @@ pub fn admin_panel() -> Html {
             log::info!("SC setup request triggered");
 
             wasm_bindgen_futures::spawn_local(async move {
-                let config = config.borrow();
+                let config = config.borrow().clone();
                 match transaction::sc_setup(&config).await {
                     Ok(result) => {
                         setup_result.set(result);

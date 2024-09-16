@@ -3,7 +3,6 @@ const CONFIG_QUERY_URL: &str = "/query";
 const CONFIG_TRANSACTION_URL: &str = "/transaction";
 const CONFIG_SETUP_URL: &str = "/setup";
 
-#[allow(unused)]
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct Config {
     pub dest: String,

@@ -191,7 +191,7 @@ pub async fn get_user_addresses(redis_client: web::Data<Client>) -> impl Respond
                 serde_json::to_string(&serializable_result_addresses).unwrap();
 
             let _: () = con
-                .set("user_addresses", &serialized_response.to_string())
+                .set("user_addresses", serialized_response.to_string())
                 .await
                 .unwrap();
 
