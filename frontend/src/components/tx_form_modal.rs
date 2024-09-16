@@ -4,6 +4,67 @@ use crate::components::Button;
 use yew::prelude::*;
 use yew_icons::IconId;
 
+pub enum QueryType {
+    Deadline,
+    Timestamp,
+    MaxFunds,
+    PingAmount,
+    UserAddresses,
+}
+
+pub enum TransactionType {
+    Ping,
+    Pong,
+    PongAll,
+    Deploy
+}
+
+pub enum ModalType {
+    DeployModal,
+    PingModal,
+}
+
+pub enum CallbackType {
+    Query(QueryType),
+    Modal(ModalType),
+    Transaction(TransactionType),
+}
+
+pub struct CallbackStruct {
+    pub callback_type: CallbackType,
+    pub callback_data: Option<HashMap<String, String>>,
+}
+
+impl CallbackStruct {
+    pub fn new_query(query_type: QueryType) -> Self {
+        Self {
+            callback_type: CallbackType::Query(query_type),
+            callback_data: None,
+        }
+    }
+
+    pub fn new_modal(modal_type: ModalType) -> Self {
+        Self {
+            callback_type: CallbackType::Modal(modal_type),
+            callback_data: None,
+        }
+    }
+
+    pub fn new_transaction(tx_type: TransactionType) -> Self {
+        Self {
+            callback_type: CallbackType::Transaction(tx_type),
+            callback_data: None,
+        }
+    }
+
+    pub fn new_transaction_with_data(tx_type: TransactionType, data: Option<HashMap<String, String>>) -> Self {
+        Self {
+            callback_type: CallbackType::Transaction(tx_type),
+            callback_data: data,
+        }
+    }
+}
+
 #[derive(Properties, PartialEq)]
 pub struct TxFormModalProps {
     pub tx_name: String,
