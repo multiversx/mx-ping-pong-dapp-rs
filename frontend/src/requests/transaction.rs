@@ -5,19 +5,20 @@ use crate::config::Config;
 use super::request;
 
 pub enum TransactionType {
-    Ping,
+    Ping(String),
     Pong,
     PongAll,
 }
 
-pub async fn ping(config: &Config) -> Result<Value, Value> {
+pub async fn ping(config: &Config, amount: String) -> Result<Value, Value> {
     let transaction_url = &config.transaction_url;
     let dest = &config.dest;
     let endpoint = format!("http://{dest}{transaction_url}/ping");
+    let ping_amount = amount.parse::<f64>().unwrap();
 
     let body = json!({
         "sender": "erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th",
-        "value": 0.001
+        "value": ping_amount
     });
 
     request::post_request("ping", &endpoint, Some(&body)).await

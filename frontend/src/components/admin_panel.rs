@@ -150,7 +150,7 @@ pub fn admin_panel() -> Html {
                 let config_borrowed = config.borrow().clone();
 
                 match tx_type {
-                    TransactionType::Ping => match transaction::ping(&config_borrowed).await {
+                    TransactionType::Ping(amount) => match transaction::ping(&config_borrowed, amount).await {
                         Ok(result) => {
                             transaction_result.set(format!(
                                 "Pinged successfully with {} EGLD",
@@ -328,6 +328,17 @@ pub fn admin_panel() -> Html {
         })
     };
 
+    let handle_submit = {
+        let ping_modal_visible = ping_deploy_modal_visible.clone();
+        let transaction_service = transaction_service.clone();
+        Callback::from(move |form_values: HashMap<String, String>| {
+            if let Some(amount) = form_values.get("Amount") {
+                transaction_service.emit(TransactionType::Ping(amount.clone()));
+            }
+            ping_modal_visible.set(false);
+        })
+    };
+
     html! {
         <div class = "admin">
         <h2>{"Ping Pong Admin Panel"}</h2>
@@ -340,7 +351,7 @@ pub fn admin_panel() -> Html {
                 <Button class_name = "query-btn" button_type="button" on_click={query_service.reform(|_| QueryType::UserAddresses)} text_content={"User Addresses".to_string()} />
             </div>
             <div class = "transaction-btns">
-                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Ping)} disabled={*is_loading} text_content={"Ping".to_string()} />
+                <Button class_name = "transaction-btn" button_type = "button" on_click={toggle_tx_form_modal.reform(|_| ModalType::PingModal)} disabled={*is_loading} text_content={"Ping".to_string()} />
                 <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Pong)} disabled={*is_loading} text_content={"Pong".to_string()} />
                 <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::PongAll)} disabled={*is_loading} text_content={"PongAll".to_string()} />
                 <Button class_name = "transaction-btn" button_type = "button" on_click={toggle_tx_form_modal.reform(|_| ModalType::DeployModal)} disabled={*is_loading} text_content={"SC Setup".to_string()} />
@@ -440,7 +451,7 @@ pub fn admin_panel() -> Html {
                         input_fields={vec!["Ping amount".to_string(), "Max funds".to_string(), "Activation timestamp".to_string(), "Duration".to_string()]}
             />
 
-            <TxFormModal tx_name={"Ping".to_string()} on_close={toggle_tx_form_modal.reform(|_| ModalType::PingModal)} on_submit={transaction_service.reform(|_| TransactionType::Ping)} is_visible={*ping_deploy_modal_visible}
+            <TxFormModal tx_name={"Ping".to_string()} on_close={toggle_tx_form_modal.reform(|_| ModalType::PingModal)} on_submit={handle_submit} is_visible={*ping_deploy_modal_visible}
                         input_fields={vec!["Amount".to_string()]}
             />
 
