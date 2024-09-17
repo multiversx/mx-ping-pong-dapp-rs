@@ -40,7 +40,7 @@ pub async fn ping(body: web::Json<PingReqBody>, redis_client: web::Data<Client>)
 
     let _: () = con.del("user_addresses").await.unwrap();
 
-    PingResponse::new("ok".to_string(), amount_numeric).send()
+    PingResponse::new("ok".to_string(), amount_numeric).response()
 }
 
 #[post("/pong")]
@@ -63,7 +63,7 @@ pub async fn pong() -> impl Responder {
         .run()
         .await;
 
-    SuccessTxResponse::new("ok".to_string()).send()
+    SuccessTxResponse::new("ok".to_string()).response()
 }
 
 #[post("/pong_all")]
@@ -85,7 +85,7 @@ pub async fn pong_all() -> impl Responder {
         .run()
         .await;
 
-    SuccessTxResponse::new("ok".to_string()).send()
+    SuccessTxResponse::new("ok".to_string()).response()
 }
 
 pub fn tx_configuration(cfg: &mut web::ServiceConfig) {

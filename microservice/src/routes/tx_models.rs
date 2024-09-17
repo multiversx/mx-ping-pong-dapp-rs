@@ -30,6 +30,7 @@ pub struct DeployResponse {
     address: String,
 }
 
+#[allow(unused)]
 impl DeployResponse {
     pub fn new(tx_response: (String, String)) -> Self {
         Self {
@@ -38,7 +39,7 @@ impl DeployResponse {
         }
     }
 
-    pub fn send(&self) -> HttpResponse {
+    pub fn response(&self) -> HttpResponse {
         HttpResponse::Ok().json(self)
     }
 }
@@ -60,6 +61,7 @@ pub struct PingResponse {
     amount: String,
 }
 
+#[allow(unused)]
 impl PingResponse {
     pub fn new(response: String, amount: RustBigUint) -> Self {
         Self {
@@ -68,7 +70,7 @@ impl PingResponse {
         }
     }
 
-    pub fn send(&self) -> HttpResponse {
+    pub fn response(&self) -> HttpResponse {
         HttpResponse::Ok().json(self)
     }
 }
@@ -83,7 +85,7 @@ impl SuccessTxResponse {
         Self { response }
     }
 
-    pub fn send(&self) -> HttpResponse {
+    pub fn response(&self) -> HttpResponse {
         HttpResponse::Ok().json(self)
     }
 }

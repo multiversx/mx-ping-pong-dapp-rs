@@ -21,7 +21,7 @@ pub fn denominate(value: f64) -> String {
             }
         }
         Some('-') => {
-            panic!("Negative values are not allowed.");
+            panic!("Negative values are no<<<<<<< HEADt allowed.");
         }
         _ => {}
     }
@@ -167,4 +167,27 @@ async fn test_nominated_str_no_decimal() {
     let value = RustBigUint::parse_bytes(b"1000000000000000000000000", 10).unwrap();
     let result = nominated_str(value);
     assert_eq!(result, "1000000.0000");
+}
+
+#[test]
+fn test_nominate() {
+    let mut denominated_value = RustBigUint::from(1_000_000_000u128);
+    let result = nominated_str(denominated_value);
+    assert_eq!(result, "0.000000001");
+
+    denominated_value = RustBigUint::from(1_000_000_000_000_000_000u128);
+    let result = nominated_str(denominated_value);
+    assert_eq!(result, "1.0000");
+
+    denominated_value = RustBigUint::from(1_000_000_000_000_000_001u128);
+    let result = nominated_str(denominated_value);
+    assert_eq!(result, "1.0000");
+
+    denominated_value = RustBigUint::from(1000000000004141411u128);
+    let result = nominated_str(denominated_value);
+    assert_eq!(result, "1.0000");
+
+    denominated_value = RustBigUint::from(100456231123000000000u128);
+    let result = nominated_str(denominated_value);
+    assert_eq!(result, "100.456231123");
 }

@@ -9,7 +9,7 @@ use serde_json::json;
 use crate::routes::proxy;
 use crate::routes::tx_models::*;
 use multiversx_sc_snippets::*;
-use redis::{AsyncCommands, Client};
+use redis::Client;
 
 #[post("")]
 pub async fn setup_contract(
@@ -60,13 +60,12 @@ pub async fn setup_contract(
         .unwrap();
 
     // Invalidate values corresponding to previous deployed contract
-    let _: () = con.del("user_addresses").await.unwrap();
-    let _: () = con.del("ping_amount").await.unwrap();
-    let _: () = con.del("max_funds").await.unwrap();
-    let _: () = con.del("deadline").await.unwrap();
-    let _: () = con.del("timestamp").await.unwrap();
+    let _: () = redis::cmd("FLUSHALL")
+        .query_async(&mut con)
+        .await
+        .expect("Failed to flush Redis");
 
-    DeployResponse::new(("ok".to_string(), new_address_bech32)).send()
+    DeployResponse::new(("ok".to_string(), new_address_bech32)).response()
 }
 
 #[get("/contract_address")]

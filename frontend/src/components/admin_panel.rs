@@ -4,7 +4,7 @@ use yew::prelude::*;
 use crate::{
     components::Button,
     context::ConfigContext,
-    requests::{query, transaction, TransactionType},
+    requests::{query, transaction::{self, TransactionType}},
 };
 
 #[function_component(AdminPanel)]
