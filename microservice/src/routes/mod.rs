@@ -3,8 +3,6 @@ pub mod proxy;
 pub mod query;
 pub mod query_models;
 pub mod setup;
-pub mod transaction;
-pub mod tx_models;
 
 #[allow(unused)]
 pub use proxy::*;
@@ -12,5 +10,3 @@ pub use proxy::*;
 pub use query::*;
 #[allow(unused)]
 pub use setup::*;
-#[allow(unused)]
-pub use transaction::*;

@@ -18,5 +18,5 @@ actix-cors = "0.7"
 [dependencies.multiversx-sc-snippets]
 version = "0.53.0"
 
-[dependencies.interactor]
+[dependencies.interactor_microservice]
 path = "src/interactor"

@@ -3,11 +3,11 @@ use std::str::FromStr;
 use actix_web::{get, post, Responder};
 use actix_web::{web, HttpResponse};
 use imports::{bech32, Bech32Address, BigUint, OptionalValue, ReturnsNewAddress, RustBigUint};
-use interactor::ContractInteract;
+use interactor_microservice::ContractInteract;
 use serde_json::json;
 
+use crate::routes::helpers::{DeployReqBody, DeployResponse};
 use crate::routes::proxy;
-use crate::routes::tx_models::*;
 use multiversx_sc_snippets::*;
 use redis::{AsyncCommands, Client};
 

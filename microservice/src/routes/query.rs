@@ -1,6 +1,6 @@
 use actix_web::{get, web, Responder};
 use imports::{Bech32Address, ReturnsResultUnmanaged};
-use interactor::ContractInteract;
+use interactor_microservice::ContractInteract;
 use redis::{AsyncCommands, Client, RedisError};
 
 use crate::routes::{

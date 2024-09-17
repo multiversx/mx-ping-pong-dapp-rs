@@ -1,4 +1,4 @@
 [workspace]
 resolver = "2"
 
-members = ["microservice", "microservice/src/interactor", "frontend"]
+members = ["microservice", "microservice/src/interactor", "frontend", "frontend/src/interactor"]
