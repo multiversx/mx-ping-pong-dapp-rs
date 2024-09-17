@@ -24,4 +24,4 @@ yew_icons = { version = "0.7.3", features = [
     "OcticonsLinkExternal16",
 ] }
 yew-router = { version = "0.17.0" }
-web-sys = "0.3.70"
+web-sys = { version = "0.3.70", features = ["HtmlFormElement"] }

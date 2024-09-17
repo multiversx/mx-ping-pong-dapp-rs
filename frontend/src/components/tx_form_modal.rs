@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use crate::components::Button;
+use std::collections::HashMap;
 use yew::prelude::*;
 use yew_icons::IconId;
 
@@ -16,6 +15,7 @@ pub struct TxFormModalProps {
 #[function_component(TxFormModal)]
 pub fn tx_form_modal(props: &TxFormModalProps) -> Html {
     let form_values = use_state(HashMap::<String, String>::new);
+    let form_ref = use_node_ref(); // Reference to the form element
 
     let handle_input = {
         let form_values = form_values.clone();
@@ -34,10 +34,10 @@ pub fn tx_form_modal(props: &TxFormModalProps) -> Html {
     let handle_submit = {
         let form_values = form_values.clone();
         let on_submit = props.on_submit.clone();
-        Callback::from(move |e: MouseEvent| {
-            e.prevent_default();
-            println!("Form values: {:?}", (*form_values).clone());
+        Callback::from(move |_e: MouseEvent| {
+            // Emit form data and clear state
             on_submit.emit((*form_values).clone());
+            form_values.set(HashMap::<String, String>::new());
         })
     };
 
@@ -50,16 +50,16 @@ pub fn tx_form_modal(props: &TxFormModalProps) -> Html {
                     <h2> {format!("{} Transaction", &props.tx_name)} </h2>
                     <Button class_name="close-btn-form" button_type="button" on_click={props.on_close.clone()} icon={IconId::FontAwesomeSolidXmark} icon_class={"icon-close".to_string()} />
                 </div>
-                <form id={format!("{}Form", &props.tx_name.to_lowercase())} class={"tx-form"}>
+                <form id={format!("{}Form", &props.tx_name.to_lowercase())} class={"tx-form"} ref={form_ref.clone()}>
 
                     { for props.input_fields.iter().enumerate().map(|(index, field)| html! {
-                        <div key={index}> // Add a key to satisfy Yew's list rendering
+                        <div key={index}>
                             <label for={format!("{}{}", field.clone().to_lowercase(), props.tx_name)}>{field.clone()}</label>
-                            <input type="text" id={format!("{}{}", field.clone().to_lowercase(), props.tx_name)} name={field.clone()} oninput={handle_input.clone()} required=true /><br />
+                            <input type="text" id={format!("{}{}", field.clone().to_lowercase(), props.tx_name)} name={field.clone()} value={form_values.get(field).unwrap_or(&"".to_string()).clone()} oninput={handle_input.clone()} required=true /><br />
                         </div>
                     }) }
                     <div class="submit-button-wrapper">
-                        <Button class_name="submit-tx-btn" button_type="button" on_click={handle_submit} text_content={"Submit".to_string()} />
+                        <Button class_name="submit-tx-btn" button_type="button" on_click={handle_submit.clone()} text_content={"Submit".to_string()} />
                     </div>
                 </form>
             </div>

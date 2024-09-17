@@ -385,3 +385,90 @@ input[type="text"] {
   display: flex;
   justify-content: center;
 }
+
+/* Query Response Modal */
+.query-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  z-index: 1000;
+  transition: visibility 0s, opacity 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.query-modal.show {
+  visibility: visible;
+  opacity: 1;
+}
+
+.query-modal.hide {
+  visibility: hidden;
+  opacity: 0;
+}
+
+/* Modal content box styling */
+.query-modal-content {
+  background-color: #fff;
+  padding: 20px 30px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  width: auto;
+  height: auto;
+  min-width: 400px;
+  max-width: 1000px; /* Adjusted for query modal content */
+  position: relative;
+  justify-content: center;
+  text-align: left;
+}
+
+.query-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.query-modal-header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.query-modal-body p {
+  font-size: 15px;
+  color: #444;
+  line-height: 1.6;
+  white-space: pre-wrap; /* Preserve whitespace for content */
+}
+
+/* Close button styling */
+.close-btn-query {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #888;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn-query:hover {
+  color: #333;
+}
+
+.user-addresses-list {
+  font-size: 15px;
+  padding-right: 10px;
+}
+
+.user-addresses-list li {
+  margin-bottom: 7px;
+}

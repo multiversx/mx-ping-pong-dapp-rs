@@ -1,9 +1,10 @@
+use log::log;
 use std::{collections::HashMap, rc::Rc};
 use yew::prelude::*;
 use yew_icons::IconId;
 
 use crate::{
-    components::{Button, ContractAddressModal, TxFormModal, TxStatusModal},
+    components::{Button, ContractAddressModal, QueryResponseModal, TxFormModal, TxStatusModal},
     context::ConfigContext,
     requests::{query, transaction, QueryType, TransactionType},
 };
@@ -26,9 +27,12 @@ pub fn admin_panel() -> Html {
     let contract_address_modal_extended = use_state(|| false);
     let addr_modal_arrow_id = use_state(|| IconId::LucideMaximize2);
     let is_loading: UseStateHandle<bool> = use_state(|| false);
+    let query_response_content = use_state(String::new);
 
     let deploy_modal_visible = use_state(|| false);
     let ping_deploy_modal_visible = use_state(|| false);
+    let query_response_modal_visible = use_state(|| false);
+    let curr_query_response: UseStateHandle<Option<QueryType>> = use_state(|| None);
 
     let query_service = {
         let config = Rc::clone(&context.config);
@@ -37,6 +41,10 @@ pub fn admin_panel() -> Html {
         let set_timestamp = context.set_timestamp.clone();
         let set_max_funds = context.set_max_funds.clone();
         let set_ping_amount = context.set_ping_amount.clone();
+        let curr_query_response = curr_query_response.clone();
+        let query_response_content = query_response_content.clone();
+        let query_response_modal_visible = query_response_modal_visible.clone();
+        let context = context.clone();
 
         Callback::from(move |query_type: QueryType| {
             let config = Rc::clone(&config);
@@ -45,6 +53,10 @@ pub fn admin_panel() -> Html {
             let set_max_funds = set_max_funds.clone();
             let set_ping_amount = set_ping_amount.clone();
             let set_user_address = user_address.clone();
+            let curr_query_response = curr_query_response.clone();
+            let query_response_content = query_response_content.clone();
+            let query_response_modal_visible = query_response_modal_visible.clone();
+            let context = context.clone();
 
             wasm_bindgen_futures::spawn_local(async move {
                 let config_borrowed = config.borrow().clone();
@@ -52,10 +64,12 @@ pub fn admin_panel() -> Html {
                 match query_type {
                     QueryType::Deadline => match query::get_deadline(&config_borrowed).await {
                         Ok(result) => {
-                            set_deadline.emit(format!(
-                                "Deadline: {}",
-                                result["response"].as_str().unwrap()
-                            ));
+                            let response = result["response"].as_str().unwrap().to_string();
+                            set_deadline.emit(format!("{}", response));
+
+                            curr_query_response.set(Some(QueryType::Deadline));
+                            query_response_content.set(response);
+                            query_response_modal_visible.set(true);
                         }
                         Err(err) => {
                             log::error!("Query failed for deadline: {:?}", err);
@@ -63,10 +77,13 @@ pub fn admin_panel() -> Html {
                     },
                     QueryType::Timestamp => match query::get_timestamp(&config_borrowed).await {
                         Ok(result) => {
-                            set_timestamp.emit(format!(
-                                "Timestamp: {}",
-                                result["response"].as_str().unwrap()
-                            ));
+                            let response = result["response"].as_str().unwrap().to_string();
+                            set_timestamp.emit(format!("{}", response));
+
+                            curr_query_response.set(Some(QueryType::Timestamp));
+
+                            query_response_content.set(response);
+                            query_response_modal_visible.set(true);
                         }
                         Err(err) => {
                             log::error!("Query failed for timestamp: {:?}", err);
@@ -74,10 +91,12 @@ pub fn admin_panel() -> Html {
                     },
                     QueryType::MaxFunds => match query::get_max_funds(&config_borrowed).await {
                         Ok(result) => {
-                            set_max_funds.emit(format!(
-                                "MaxFunds: {}",
-                                result["response"].as_str().unwrap()
-                            ));
+                            let response = result["response"].as_str().unwrap().to_string();
+                            set_max_funds.emit(format!("{}", response));
+
+                            curr_query_response.set(Some(QueryType::MaxFunds));
+                            query_response_content.set(response);
+                            query_response_modal_visible.set(true);
                         }
                         Err(err) => {
                             log::error!("Query failed for max funds: {:?}", err);
@@ -85,10 +104,12 @@ pub fn admin_panel() -> Html {
                     },
                     QueryType::PingAmount => match query::get_ping_amount(&config_borrowed).await {
                         Ok(result) => {
-                            set_ping_amount.emit(format!(
-                                "PingAmount: {}",
-                                result["response"].as_str().unwrap()
-                            ));
+                            let response = result["response"].as_str().unwrap().to_string();
+                            set_ping_amount.emit(format!("{}", response));
+
+                            curr_query_response.set(Some(QueryType::PingAmount));
+                            query_response_content.set(response);
+                            query_response_modal_visible.set(true);
                         }
                         Err(err) => {
                             log::error!("Query failed for ping amount: {:?}", err);
@@ -103,7 +124,17 @@ pub fn admin_panel() -> Html {
                                         .filter_map(|address| address.as_str())
                                         .collect::<Vec<_>>()
                                         .join("\n");
-                                    set_user_address.set(formatted_addresses);
+                                    set_user_address.set(formatted_addresses.clone());
+
+                                    curr_query_response.set(Some(QueryType::UserAddresses));
+
+                                    if formatted_addresses.is_empty() {
+                                        query_response_content
+                                            .set("No address has pinged yet".to_string());
+                                    } else {
+                                        query_response_content.set(formatted_addresses);
+                                    }
+                                    query_response_modal_visible.set(true);
                                 } else {
                                     log::error!("'response' field is not an array or is missing.");
                                 }
@@ -150,24 +181,26 @@ pub fn admin_panel() -> Html {
                 let config_borrowed = config.borrow().clone();
 
                 match tx_type {
-                    TransactionType::Ping(amount) => match transaction::ping(&config_borrowed, amount).await {
-                        Ok(result) => {
-                            transaction_result.set(format!(
-                                "Pinged successfully with {} EGLD",
-                                result["amount"].as_str().unwrap()
-                            ));
-                            tx_status_modal_visible.set(true);
-                            tx_status.set("Success".to_string());
-                            status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
+                    TransactionType::Ping(amount) => {
+                        match transaction::ping(&config_borrowed, amount).await {
+                            Ok(result) => {
+                                transaction_result.set(format!(
+                                    "Pinged successfully with {} EGLD",
+                                    result["amount"].as_str().unwrap()
+                                ));
+                                tx_status_modal_visible.set(true);
+                                tx_status.set("Success".to_string());
+                                status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
+                            }
+                            Err(err) => {
+                                log::error!("Transaction failed: {:?}", err);
+                                transaction_result.set("Ping failed!".to_string());
+                                tx_status_modal_visible.set(true);
+                                tx_status.set("Failed".to_string());
+                                status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
+                            }
                         }
-                        Err(err) => {
-                            log::error!("Transaction failed: {:?}", err);
-                            transaction_result.set("Ping failed!".to_string());
-                            tx_status_modal_visible.set(true);
-                            tx_status.set("Failed".to_string());
-                            status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
-                        }
-                    },
+                    }
                     TransactionType::Pong => match transaction::pong(&config_borrowed).await {
                         Ok(_result) => {
                             transaction_result.set("Ponged successfully".to_string());
@@ -311,6 +344,20 @@ pub fn admin_panel() -> Html {
         })
     };
 
+    let toggle_query_response_modal = {
+        let query_response_modal_visible = query_response_modal_visible.clone();
+        let query_response_content = query_response_content.clone();
+        Callback::from(move |_| {
+            let query_response_modal_visible = query_response_modal_visible.clone();
+            let query_response_content = query_response_content.clone();
+            query_response_modal_visible.set(!*query_response_modal_visible);
+
+            if !*query_response_modal_visible {
+                query_response_content.set("".to_string());
+            }
+        })
+    };
+
     let change_addr_modal_visibility = {
         let contract_address_modal_extended = contract_address_modal_extended.clone();
         let addr_modal_arrow_id = addr_modal_arrow_id.clone();
@@ -357,90 +404,6 @@ pub fn admin_panel() -> Html {
                 <Button class_name = "transaction-btn" button_type = "button" on_click={toggle_tx_form_modal.reform(|_| ModalType::DeployModal)} disabled={*is_loading} text_content={"SC Setup".to_string()} />
             </div>
         </div>
-            {
-                if !context.deadline.is_empty() {
-                    html! {
-                        <>
-                            <p>{ &context.deadline }</p>
-                        </>
-                    }
-                }
-                else {
-                    html! { <></> }
-                }
-            }
-            {
-                if !context.timestamp.is_empty() {
-                    html! {
-                        <>
-                            <p>{ &context.timestamp }</p>
-                        </>
-                    }
-                }
-                else {
-                    html! { <></> }
-                }
-            }
-            {
-                if !context.max_funds.is_empty() {
-                    html! {
-                        <>
-                            <p>{ &context.max_funds }</p>
-                        </>
-                    }
-                }
-                else {
-                    html! { <></> }
-                }
-            }
-            {
-                if !context.ping_amount.is_empty() {
-                    html! {
-                        <>
-                            <p>{ &context.ping_amount }</p>
-                        </>
-                    }
-                }
-                else {
-                    html! { <></> }
-                }
-            }
-            {
-                if !(*user_addresses_result).is_empty() {
-                    let addresses: Vec<&str> = (*user_addresses_result).split('\n').collect();
-                    html! {
-                        <ul>
-                            { for addresses.iter().map(|address| html! { <li>{ address }</li> }) }
-                        </ul>
-                    }
-                } else {
-                    html! { <></> }
-                }
-            }
-            {
-                if !(*transaction_result).is_empty() {
-                    html! {
-                        <>
-                            <p>{ (*transaction_result).clone() }</p>
-                        </>
-                    }
-                }
-                else {
-                    html! { <></> }
-                }
-            }
-            {
-                if !(*setup_result).is_empty() {
-                    html! {
-                        <>
-                            <p>{ (*setup_result).clone() }</p>
-                        </>
-                    }
-                }
-                else {
-                    html! { <></> }
-                }
-            }
 
             <TxStatusModal status={(*tx_status).clone()} on_close={close_tx_status.clone()} is_visible={*tx_status_modal_visible} icon={*status_icon_id} />
 
@@ -454,6 +417,8 @@ pub fn admin_panel() -> Html {
             <TxFormModal tx_name={"Ping".to_string()} on_close={toggle_tx_form_modal.reform(|_| ModalType::PingModal)} on_submit={handle_submit} is_visible={*ping_deploy_modal_visible}
                         input_fields={vec!["Amount".to_string()]}
             />
+
+            <QueryResponseModal query_type={(*curr_query_response).clone()} on_close={toggle_query_response_modal} is_visible={*query_response_modal_visible} response={(*query_response_content).clone()} />
 
         </div>
 

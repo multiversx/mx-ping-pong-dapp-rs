@@ -4,6 +4,7 @@ use crate::config::Config;
 
 use super::request;
 
+#[derive(PartialEq, Clone)]
 pub enum QueryType {
     Deadline,
     Timestamp,
