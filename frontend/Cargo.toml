@@ -32,3 +32,4 @@ yew_icons = { version = "0.7.3", features = [
 ] }
 yew-router = { version = "0.17.0" }
 web-sys = { version = "0.3.70", features = ["HtmlFormElement"] }
+getrandom = { version = "0.2", features = ["js"] }
