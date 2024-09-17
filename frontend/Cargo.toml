@@ -3,6 +3,13 @@ name = "frontend"
 version = "0.1.0"
 edition = "2021"
 
+
+[dependencies.multiversx-sc-snippets]
+version = "0.53.0"
+
+[dependencies.interactor_frontend]
+path = "src/interactor"
+
 [dependencies]
 gloo-timers = "0.3.0"
 console_log = "0.2"

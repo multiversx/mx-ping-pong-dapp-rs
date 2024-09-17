@@ -1,0 +1,15 @@
+[package]
+name = "interactor_frontend"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8.6"
+tokio = { version = "1.40.0", features = ["full"] }
+
+[dependencies.multiversx-sc-snippets]
+version = "0.53.0"

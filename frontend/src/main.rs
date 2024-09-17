@@ -7,6 +7,7 @@ use yew_router::{BrowserRouter, Switch};
 mod components;
 mod config;
 mod context;
+mod transactions;
 mod pages;
 mod requests;
 mod routes;

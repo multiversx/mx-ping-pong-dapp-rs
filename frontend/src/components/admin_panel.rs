@@ -179,7 +179,7 @@ pub fn admin_panel() -> Html {
 
                 match tx_type {
                     TransactionType::Ping(amount) => {
-                        match transaction::ping(&config_borrowed, amount).await {
+                        match transaction::ping(amount).await {
                             Ok(result) => {
                                 transaction_result.set(format!(
                                     "Pinged successfully with {} EGLD",
