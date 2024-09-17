@@ -34,7 +34,7 @@ pub fn query_response_modal(props: &QueryResponseModalProps) -> Html {
                 {
                     match query_name.as_str() {
                         "User Addresses" => {
-                            if props.response == "No address has pinged yet".to_string() {
+                            if props.response == *"No address has pinged yet" {
                                 html! {
                                     <p>{&props.response}</p>
                                 }

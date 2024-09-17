@@ -1,4 +1,3 @@
-use log::log;
 use std::{collections::HashMap, rc::Rc};
 use yew::prelude::*;
 use yew_icons::IconId;
@@ -44,7 +43,6 @@ pub fn admin_panel() -> Html {
         let curr_query_response = curr_query_response.clone();
         let query_response_content = query_response_content.clone();
         let query_response_modal_visible = query_response_modal_visible.clone();
-        let context = context.clone();
 
         Callback::from(move |query_type: QueryType| {
             let config = Rc::clone(&config);
@@ -56,7 +54,6 @@ pub fn admin_panel() -> Html {
             let curr_query_response = curr_query_response.clone();
             let query_response_content = query_response_content.clone();
             let query_response_modal_visible = query_response_modal_visible.clone();
-            let context = context.clone();
 
             wasm_bindgen_futures::spawn_local(async move {
                 let config_borrowed = config.borrow().clone();
@@ -65,7 +62,7 @@ pub fn admin_panel() -> Html {
                     QueryType::Deadline => match query::get_deadline(&config_borrowed).await {
                         Ok(result) => {
                             let response = result["response"].as_str().unwrap().to_string();
-                            set_deadline.emit(format!("{}", response));
+                            set_deadline.emit(response.clone());
 
                             curr_query_response.set(Some(QueryType::Deadline));
                             query_response_content.set(response);
@@ -78,7 +75,7 @@ pub fn admin_panel() -> Html {
                     QueryType::Timestamp => match query::get_timestamp(&config_borrowed).await {
                         Ok(result) => {
                             let response = result["response"].as_str().unwrap().to_string();
-                            set_timestamp.emit(format!("{}", response));
+                            set_timestamp.emit(response.clone());
 
                             curr_query_response.set(Some(QueryType::Timestamp));
 
@@ -92,7 +89,7 @@ pub fn admin_panel() -> Html {
                     QueryType::MaxFunds => match query::get_max_funds(&config_borrowed).await {
                         Ok(result) => {
                             let response = result["response"].as_str().unwrap().to_string();
-                            set_max_funds.emit(format!("{}", response));
+                            set_max_funds.emit(response.clone());
 
                             curr_query_response.set(Some(QueryType::MaxFunds));
                             query_response_content.set(response);
@@ -105,7 +102,7 @@ pub fn admin_panel() -> Html {
                     QueryType::PingAmount => match query::get_ping_amount(&config_borrowed).await {
                         Ok(result) => {
                             let response = result["response"].as_str().unwrap().to_string();
-                            set_ping_amount.emit(format!("{}", response));
+                            set_ping_amount.emit(response.clone());
 
                             curr_query_response.set(Some(QueryType::PingAmount));
                             query_response_content.set(response);
