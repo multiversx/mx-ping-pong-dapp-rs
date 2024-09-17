@@ -21,7 +21,7 @@ pub fn denominate(value: f64) -> String {
             }
         }
         Some('-') => {
-            panic!("Negative values are no<<<<<<< HEADt allowed.");
+            panic!("Negative values are not allowed.");
         }
         _ => {}
     }
