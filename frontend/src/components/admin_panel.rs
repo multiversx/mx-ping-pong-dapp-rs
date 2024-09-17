@@ -2,6 +2,8 @@ use std::{collections::HashMap, rc::Rc};
 use yew::prelude::*;
 use yew_icons::IconId;
 
+use multiversx_sc_snippets::*;
+
 use crate::{
     components::{Button, ContractAddressModal, QueryResponseModal, TxFormModal, TxStatusModal},
     context::ConfigContext,
