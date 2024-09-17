@@ -55,7 +55,7 @@ pub fn tx_form_modal(props: &TxFormModalProps) -> Html {
                     { for props.input_fields.iter().enumerate().map(|(index, field)| html! {
                         <div key={index}>
                             <label for={format!("{}{}", field.clone().to_lowercase(), props.tx_name)}>{field.clone()}</label>
-                            <input type="text" id={format!("{}{}", field.clone().to_lowercase(), props.tx_name)} name={field.clone()} value={form_values.get(field).unwrap_or(&"".to_string()).clone()} oninput={handle_input.clone()} required=true /><br />
+                            <input type="number" id={format!("{}{}", field.clone().to_lowercase(), props.tx_name)} name={field.clone()} value={form_values.get(field).unwrap_or(&"".to_string()).clone()} oninput={handle_input.clone()} required=true /><br />
                         </div>
                     }) }
                     <div class="submit-button-wrapper">

@@ -38,13 +38,13 @@ pub async fn sc_setup(
     let ping_amount = ping_amount.parse::<f64>().unwrap();
     let max_funds = max_funds.parse::<f64>().unwrap();
     let duration = duration.parse::<u64>().unwrap();
+    let activation_timestamp = activation_timestamp.parse::<u64>().unwrap();
 
     let body = json!({
         "ping_amount": ping_amount,
         "max_funds": max_funds,
         "activation_timestamp": activation_timestamp,
         "duration": duration,
-        "deployer": "erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th"
     });
 
     request::post_request("sc_setup", &endpoint, Some(&body)).await

@@ -41,7 +41,6 @@ pub fn query_response_modal(props: &QueryResponseModalProps) -> Html {
                             }
                             else {
                                 let user_address_split = &props.response.split("\n").collect::<Vec<&str>>();
-                                log::info!("************* {:?}", user_address_split);
                                 html! {
                                     <ul class="user-addresses-list">
                                         {for user_address_split.iter().map(|address| html! {

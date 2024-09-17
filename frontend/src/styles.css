@@ -372,7 +372,7 @@ label {
   gap: 20px;
 }
 
-input[type="text"] {
+input[type="number"] {
   width: 93%;
   padding: 10px;
   margin-bottom: 15px;

@@ -18,21 +18,24 @@ pub async fn setup_contract(
 ) -> impl Responder {
     let mut contract_interact = ContractInteract::new().await;
 
-    let (amount, max_funds, _activation_timestamp, duration, deployer) =
-        body.get_tx_sending_values();
+    let (amount, max_funds, activation_timestamp, duration) = body.get_tx_sending_values();
 
     let contract_code = contract_interact.contract_code.clone();
-    let wallet_address = Bech32Address::from_bech32_string(deployer);
 
     let ping_amount = RustBigUint::from_str(&amount).unwrap();
     let duration_in_seconds = duration;
-    let opt_activation_timestamp: Option<u64> = None;
+
+    let opt_activation_timestamp = match activation_timestamp {
+        0 => None,
+        _ => Some(activation_timestamp),
+    };
+
     let max_funds = OptionalValue::Some(RustBigUint::from_str(&max_funds).unwrap());
 
     let new_address = contract_interact
         .interactor
         .tx()
-        .from(wallet_address)
+        .from(contract_interact.wallet_address)
         .gas(30_000_000u64)
         .typed(proxy::PingPongProxy)
         .init(

@@ -7,19 +7,17 @@ use serde::{Deserialize, Serialize};
 pub struct DeployReqBody {
     pub ping_amount: f64,
     pub max_funds: f64,
-    pub activation_timestamp: String,
+    pub activation_timestamp: u64,
     pub duration: u64,
-    pub deployer: String,
 }
 
 impl DeployReqBody {
-    pub fn get_tx_sending_values(&self) -> (String, String, String, u64, String) {
+    pub fn get_tx_sending_values(&self) -> (String, String, u64, u64) {
         (
             denominate(self.ping_amount),
             denominate(self.max_funds),
-            self.activation_timestamp.clone(),
+            self.activation_timestamp,
             self.duration,
-            self.deployer.clone(),
         )
     }
 }
