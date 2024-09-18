@@ -1,0 +1,35 @@
+[package]
+name = "multiversx-my-sc-snippets"
+version = "0.1.0"
+edition = "2021"
+
+authors = ["MultiversX <contact@multiversx.com>"]
+license = "GPL-3.0-only"
+readme = "README.md"
+repository = "https://github.com/multiversx/mx-sdk-rs"
+homepage = "https://multiversx.com/"
+documentation = "https://docs.multiversx.com/"
+description = "MultiversX framework for building smart contract interaction snippets"
+keywords = ["multiversx", "blockchain", "contract", "snippets"]
+categories = ["cryptography::cryptocurrencies"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4.32"
+hex = "0.4"
+base64 = "0.22"
+log = "0.4.17"
+env_logger = "0.11"
+futures = "0.3"
+
+[dependencies.multiversx-my-sc-scenario]
+path = "../scenario"
+
+[dependencies.multiversx-my-chain-scenario-format]
+path = "../sdk/scenario-format"
+
+[dependencies.multiversx-my-sdk]
+path = "../sdk/core"
+
+[dev-dependencies]
+serde_json = "1.0"
