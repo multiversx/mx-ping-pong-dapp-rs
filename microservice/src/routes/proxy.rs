@@ -7,7 +7,7 @@
 #![allow(dead_code)]
 #![allow(clippy::all)]
 
-use multiversx_my_sc_snippets::multiversx_sc::{*, proxy_imports::*};
+use multiversx_my_sc_snippets::multiversx_sc::proxy_imports::*;
 
 pub struct PingPongProxy;
 

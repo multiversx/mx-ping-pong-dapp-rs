@@ -61,7 +61,7 @@ pub async fn post_request(
 pub async fn post_request_at_home() -> Result<Value, Value> {
     let ping_response = ping_tx().await;
 
-    return Ok(json!({
+    Ok(json!({
         "status": ping_response.response
-    }));
+    }))
 }

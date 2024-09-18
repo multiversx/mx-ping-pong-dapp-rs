@@ -34,26 +34,26 @@ pub async fn ping_tx() -> SuccessTxResponse {
     let opts = RequestInit::new();
     opts.set_method("POST");
     opts.set_mode(RequestMode::Cors);
-    opts.set_body(&JsValue::from_str(&emitted_tx));
+    opts.set_body(&JsValue::from_str(emitted_tx));
 
     let headers = Headers::new().unwrap();
     headers.set("Content-Type", "application/json").unwrap();
     opts.set_headers(&headers);
 
-    let url = format!("https://devnet-gateway.multiversx.com/transaction/send");
+    let url = "https://devnet-gateway.multiversx.com/transaction/send".to_string();
     let req = Request::new_with_str_and_init(&url, &opts).unwrap();
 
     let window = web_sys::window().unwrap();
 
-    let resp_value = JsFuture::from(window.fetch_with_request(&req)).await;
+    let _resp_value = JsFuture::from(window.fetch_with_request(&req)).await;
 
     SuccessTxResponse::new("ok".to_string())
 }
 
-pub async fn pong_tx() -> SuccessTxResponse {
+pub async fn _pong_tx() -> SuccessTxResponse {
     SuccessTxResponse::new("ok".to_string())
 }
 
-pub async fn pong_all_tx() -> SuccessTxResponse {
+pub async fn _pong_all_tx() -> SuccessTxResponse {
     SuccessTxResponse::new("ok".to_string())
 }

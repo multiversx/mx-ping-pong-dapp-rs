@@ -6,10 +6,7 @@ use multiversx_my_sdk::{
 
 #[tokio::main]
 async fn main() {
-    let wl = Wallet::from_private_key(
-        "1648ad209d6b157a289884933e3bb30f161ec7113221ec16f87c3578b05830b0",
-    )
-    .unwrap();
+    let wl = Wallet::from_pem_file("./demoPem.pem").unwrap();
     let addr = wl.address();
     let blockchain = GatewayProxy::new(DEVNET_GATEWAY.to_string());
     let network_config = blockchain.get_network_config().await.unwrap();
@@ -35,6 +32,6 @@ async fn main() {
 
     let signature = wl.sign_tx(&unsign_tx);
     unsign_tx.signature = Some(hex::encode(signature));
-    let tx_hash = blockchain.send_transaction(&unsign_tx).await.unwrap();
-    println!("tx_hash {tx_hash}");
+    let tx_hash = blockchain.send_transaction(&unsign_tx);
+    // println!("tx_hash {tx_hash}");
 }

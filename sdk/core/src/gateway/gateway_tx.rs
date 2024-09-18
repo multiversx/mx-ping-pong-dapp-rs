@@ -9,7 +9,10 @@ use crate::data::{
 };
 use anyhow::{anyhow, Result};
 use itertools::Itertools;
-use serde_json::json;
+use serde_json::to_string_pretty;
+use wasm_bindgen::prelude::*;
+use wasm_bindgen_futures::JsFuture;
+use web_sys::{Headers, Request, RequestInit, RequestMode};
 
 use super::GatewayProxy;
 
@@ -19,6 +22,11 @@ const SEND_MULTIPLE_TRANSACTIONS_ENDPOINT: &str = "transaction/send-multiple";
 const GET_TRANSACTION_INFO_ENDPOINT: &str = "transaction/";
 const WITH_RESULTS_QUERY_PARAM: &str = "?withResults=true";
 const VM_VALUES_ENDPOINT: &str = "vm-values/query";
+
+#[wasm_bindgen]
+extern "C" {
+    fn alert(s: &str);
+}
 
 impl GatewayProxy {
     // request_transaction_cost retrieves how many gas a transaction will consume
@@ -121,22 +129,33 @@ impl GatewayProxy {
         })
     }
 
-    pub async fn send_transaction(&self, tx: &Transaction) -> Result<String> {
+    pub fn send_transaction(&self, tx: &Transaction) {
+        let tx_str = to_string_pretty(&tx).unwrap();
         let endpoint = self.get_endpoint(SEND_TRANSACTION_ENDPOINT);
-        println!("TX: {}", json!(tx));
-        let resp = self
-            .client
-            .post(endpoint)
-            .json(tx)
-            .send()
-            .await?
-            .json::<SendTransactionResponse>()
-            .await?;
-
-        match resp.data {
-            None => Err(anyhow!("{}", resp.error)),
-            Some(b) => Ok(b.tx_hash),
-        }
+    
+        let window = web_sys::window().unwrap();
+        let opts = RequestInit::new();
+        opts.set_method("POST");
+        opts.set_mode(RequestMode::Cors);
+        opts.set_body(&JsValue::from_str(&tx_str));
+    
+        let request = Request::new_with_str_and_init(&endpoint, &opts).unwrap();
+        request.headers().set("Content-Type", "application/json").unwrap();
+    
+        let fetch_promise = window.fetch_with_request(&request);
+    
+        let on_success = Closure::wrap(Box::new(move |_response: JsValue| {
+            alert("Transaction sent successfully!");
+        }) as Box<dyn FnMut(JsValue)>);
+    
+        let on_error = Closure::wrap(Box::new(move |_err: JsValue| {
+            alert("Failed to send transaction!");
+        }) as Box<dyn FnMut(JsValue)>);
+    
+        fetch_promise.then(&on_success).catch(&on_error);
+    
+        on_success.forget();
+        on_error.forget();
     }
 
     pub async fn send_transactions(&self, txs: &Vec<Transaction>) -> Result<Vec<String>> {

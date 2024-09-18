@@ -11,12 +11,12 @@ pub enum TransactionType {
 }
 
 pub async fn ping(amount: String) -> Result<Value, Value> {
-    let ping_amount = amount.parse::<f64>().unwrap();
+    let _ping_amount = amount.parse::<f64>().unwrap();
 
     request::post_request_at_home().await
 }
 
-pub async fn pong(config: &Config) -> Result<Value, Value> {
+pub async fn pong(_config: &Config) -> Result<Value, Value> {
     Ok(json!({
         "status": "success",
         "message": "This is a dummy successful response"
@@ -26,7 +26,7 @@ pub async fn pong(config: &Config) -> Result<Value, Value> {
 pub async fn pong_all(config: &Config) -> Result<Value, Value> {
     let transaction_url = &config.transaction_url;
     let dest = &config.dest;
-    let endpoint = format!("http://{dest}{transaction_url}/pong_all");
+    let _endpoint = format!("http://{dest}{transaction_url}/pong_all");
 
     Ok(json!({
         "status": "success",
