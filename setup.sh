@@ -1,24 +1,13 @@
-#!/bin/bash
-
-PORT_MICROSERVICE=8088
-PORT_FRONTEND=8080
-PORT_REDIS=6379
-
-BASE_DIR=$(pwd)
-
 cleanup() {
     echo "Stopping all processes..."
-
     kill $(jobs -p) 2>/dev/null
-
-    wait
-
     exit 0
 }
 
-trap cleanup SIGINT SIGTERM EXIT
+trap cleanup SIGINT SIGTERM
+trap cleanup EXIT
 
-redis-server &
+BASE_DIR=$(pwd)
 
 cargo run --bin microservice &
 MICROSERVICE_PID=$!
@@ -29,7 +18,6 @@ if [ $? -ne 0 ]; then
 fi
 
 cd "$BASE_DIR/frontend"
-
 trunk serve --open &
 FRONTEND_PID=$!
 
@@ -39,4 +27,5 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-wait
+wait $MICROSERVICE_PID
+wait $FRONTEND_PID
