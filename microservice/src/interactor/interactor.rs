@@ -8,7 +8,7 @@ use multiversx_sc_snippets::*;
 use serde::{Deserialize, Serialize};
 
 const GATEWAY: &str = sdk::gateway::DEVNET_GATEWAY;
-const STATE_FILE: &str = "microservice/src/shared_state/state.toml";
+const STATE_FILE: &str = "../src/shared_state/state.toml";
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct State {

@@ -1,4 +1,4 @@
-const CONFIG_DEST: &str = "127.0.0.1:8088";
+const CONFIG_DEST: &str = "127.0.0.1:8089";
 const CONFIG_QUERY_URL: &str = "/query";
 const CONFIG_TRANSACTION_URL: &str = "/tx";
 const CONFIG_SETUP_URL: &str = "/setup";
