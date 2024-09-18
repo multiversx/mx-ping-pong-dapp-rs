@@ -34,7 +34,7 @@ pub use crate::scenario::model as scenario_model;
 pub use crate::scenario as mandos_system;
 
 // Re-exporting the whole mandos crate for easier use in tests.
-pub use multiversx_my_chain_scenario_format as scenario_format;
+pub use multiversx_my_chain_scenario_format as my_scenario_format;
 
 pub use facade::{result_handlers::*, world_tx::*, ContractInfo, ScenarioWorld, WhiteboxContract};
 

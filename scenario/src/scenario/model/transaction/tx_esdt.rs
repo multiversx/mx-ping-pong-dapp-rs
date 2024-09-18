@@ -2,7 +2,7 @@ use multiversx_sc::{api::ManagedTypeApi, types::EsdtTokenPayment};
 
 use crate::{
     scenario::model::{BigUintValue, BytesValue, U64Value},
-    scenario_format::{
+    my_scenario_format::{
         interpret_trait::{InterpretableFrom, InterpreterContext, IntoRaw},
         serde_raw::{TxESDTRaw, ValueSubTree},
     },

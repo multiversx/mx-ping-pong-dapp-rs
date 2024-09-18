@@ -1,5 +1,5 @@
 use actix_web::{get, web, Responder};
-use imports::{Bech32Address, ReturnsResultUnmanaged};
+use multiversx_my_sc_snippets::imports::{Bech32Address, ReturnsResultUnmanaged};
 use interactor_microservice::ContractInteract;
 use redis::{AsyncCommands, Client, RedisError};
 
@@ -8,7 +8,7 @@ use crate::routes::{
     proxy,
     query_models::*,
 };
-use multiversx_sc_snippets::*;
+use multiversx_my_sc_snippets::*;
 
 #[get("/deadline")]
 pub async fn get_deadline(redis_client: web::Data<Client>) -> impl Responder {

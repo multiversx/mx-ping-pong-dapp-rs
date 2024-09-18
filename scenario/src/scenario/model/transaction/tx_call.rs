@@ -2,7 +2,7 @@ use crate::{
     api::StaticApi,
     multiversx_sc::types::{ContractCall, EsdtTokenPayment},
     scenario::model::{AddressValue, BigUintValue, BytesValue, U64Value},
-    scenario_format::{
+    my_scenario_format::{
         interpret_trait::{InterpretableFrom, InterpreterContext, IntoRaw},
         serde_raw::TxCallRaw,
     },

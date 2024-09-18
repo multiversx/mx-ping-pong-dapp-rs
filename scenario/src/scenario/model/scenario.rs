@@ -1,4 +1,4 @@
-use crate::scenario_format::{
+use crate::my_scenario_format::{
     interpret_trait::{InterpretableFrom, InterpreterContext, IntoRaw},
     serde_raw::ScenarioRaw,
 };

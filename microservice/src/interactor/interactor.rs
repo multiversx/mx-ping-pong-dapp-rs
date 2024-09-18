@@ -3,8 +3,8 @@ use std::{
     path::Path,
 };
 
-use imports::{Address, Bech32Address, BytesValue, InterpretableFrom, InterpreterContext};
-use multiversx_sc_snippets::*;
+use multiversx_my_sc_snippets::imports::{Address, Bech32Address, BytesValue, InterpretableFrom, InterpreterContext};
+use multiversx_my_sc_snippets::*;
 use serde::{Deserialize, Serialize};
 
 const GATEWAY: &str = sdk::gateway::DEVNET_GATEWAY;

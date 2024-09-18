@@ -1,6 +1,6 @@
 use crate::{
     scenario::model::{AddressValue, BytesValue},
-    scenario_format::{
+    my_scenario_format::{
         interpret_trait::{InterpretableFrom, InterpreterContext, IntoRaw},
         serde_raw::TxQueryRaw,
     },

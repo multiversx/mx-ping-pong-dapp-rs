@@ -1,6 +1,6 @@
 use crate::{
     scenario::model::{BigUintValue, BytesValue, CheckValue, CheckValueList, U64Value},
-    scenario_format::{
+    my_scenario_format::{
         interpret_trait::{InterpretableFrom, InterpreterContext, IntoRaw},
         serde_raw::CheckEsdtInstanceRaw,
     },

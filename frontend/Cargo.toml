@@ -26,3 +26,6 @@ yew_icons = { version = "0.7.3", features = [
 ] }
 yew-router = { version = "0.17.0" }
 web-sys = "0.3.70"
+
+[dependencies.multiversx-my-sc-snippets]
+path = "../snippets"

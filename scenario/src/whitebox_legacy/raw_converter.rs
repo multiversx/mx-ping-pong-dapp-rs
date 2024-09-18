@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use crate::{
     multiversx_sc::types::heap::Address,
-    scenario_format::serde_raw::{
+    my_scenario_format::serde_raw::{
         AccountRaw, CheckAccountRaw, CheckAccountsRaw, CheckBytesValueRaw, CheckEsdtDataRaw,
         CheckEsdtInstanceRaw, CheckEsdtInstancesRaw, CheckEsdtMapContentsRaw, CheckEsdtMapRaw,
         CheckEsdtRaw, CheckLogsRaw, CheckStorageDetailsRaw, CheckStorageRaw, CheckValueListRaw,

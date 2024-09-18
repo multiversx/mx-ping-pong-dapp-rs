@@ -5,7 +5,7 @@ use crate::{
         BigUintValue, BytesKey, BytesValue, CheckEsdt, CheckEsdtInstances, CheckEsdtMap,
         CheckEsdtMapContents, CheckStorage, CheckStorageDetails, CheckValue, U64Value,
     },
-    scenario_format::{
+    my_scenario_format::{
         interpret_trait::{InterpretableFrom, InterpreterContext, IntoRaw},
         serde_raw::CheckAccountRaw,
     },

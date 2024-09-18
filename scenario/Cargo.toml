@@ -1,6 +1,6 @@
 [package]
 name = "multiversx-my-sc-scenario"
-version = "0.52.3"
+version = "0.53.0"
 edition = "2021"
 
 authors = [
@@ -44,7 +44,7 @@ features = ["alloc", "num-bigint"]
 version = "=0.53.0"
 
 [dependencies.multiversx-my-chain-scenario-format]
-path = "../sdk/scenario-format"
+path = "../sdk/my-scenario-format"
 
 [dependencies.multiversx-chain-vm-executor]
 version = "0.2.0"

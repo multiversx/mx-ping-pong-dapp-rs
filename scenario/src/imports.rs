@@ -20,7 +20,7 @@ pub use crate::{
         },
         ScenarioRunner,
     },
-    scenario_format::interpret_trait::{InterpretableFrom, InterpreterContext},
+    my_scenario_format::interpret_trait::{InterpretableFrom, InterpreterContext},
     whitebox_legacy::*,
     ScenarioTxRun,
 };

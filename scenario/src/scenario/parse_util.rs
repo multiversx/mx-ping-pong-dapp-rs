@@ -1,6 +1,6 @@
 use crate::{
     scenario::model::Scenario,
-    scenario_format::{
+    my_scenario_format::{
         interpret_trait::{InterpretableFrom, InterpreterContext},
         serde_raw::ScenarioRaw,
     },

@@ -1,5 +1,5 @@
 use multiversx_my_sc_scenario::{
-    multiversx_sc::types::Address, scenario_format::value_interpreter::keccak256,
+    multiversx_sc::types::Address, my_scenario_format::value_interpreter::keccak256,
 };
 
 #[cfg(test)]

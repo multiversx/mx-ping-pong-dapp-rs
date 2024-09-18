@@ -1,7 +1,7 @@
 use std::{fs, fs::File, io::Write};
 
 use multiversx_my_sc_scenario::{
-    scenario_format::{
+    my_scenario_format::{
         interpret_trait::{InterpretableFrom, InterpreterContext, IntoRaw},
         serde_raw::ScenarioRaw,
     },

@@ -15,8 +15,8 @@ chrono = "0.4.38"
 tokio = "1.40.0"
 actix-cors = "0.7"
 
-[dependencies.multiversx-sc-snippets]
-version = "0.53.0"
+[dependencies.multiversx-my-sc-snippets]
+path = "../snippets"
 
 [dependencies.interactor_microservice]
 path = "src/interactor"

@@ -1,4 +1,4 @@
-use multiversx_sc_snippets::network_response::{self, is_out_scr};
+use multiversx_my_sc_snippets::network_response::{self, is_out_scr};
 use multiversx_my_sdk::data::transaction::{TransactionInfo, TransactionOnNetwork};
 
 #[test]

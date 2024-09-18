@@ -8,7 +8,7 @@ use crate::multiversx_sc::types::{Address, TestAddress, TestSCAddress};
 
 use crate::{
     facade::expr::Bech32Address,
-    scenario_format::{
+    my_scenario_format::{
         interpret_trait::{InterpretableFrom, InterpreterContext, IntoRaw},
         serde_raw::ValueSubTree,
         value_interpreter::{interpret_string, interpret_subtree},

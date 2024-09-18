@@ -7,8 +7,7 @@
 #![allow(dead_code)]
 #![allow(clippy::all)]
 
-use multiversx_sc::proxy_imports::*;
-use multiversx_sc_snippets::multiversx_sc;
+use multiversx_my_sc_snippets::multiversx_sc::{*, proxy_imports::*};
 
 pub struct PingPongProxy;
 
@@ -189,23 +188,6 @@ where
             .original_result()
     }
 
-    /// State of user funds. 
-    /// 0 - user unknown, never `ping`-ed 
-    /// 1 - `ping`-ed 
-    /// 2 - `pong`-ed 
-    pub fn user_status<
-        Arg0: ProxyArg<usize>,
-    >(
-        self,
-        user_id: Arg0,
-    ) -> TxTypedCall<Env, From, To, NotPayable, Gas, UserStatus> {
-        self.wrapped_tx
-            .payment(NotPayable)
-            .raw_call("getUserStatus")
-            .argument(&user_id)
-            .original_result()
-    }
-
     /// Part of the `pongAll` status, the last user to be processed. 
     /// 0 if never called `pongAll` or `pongAll` completed.. 
     pub fn pong_all_last_user(
@@ -216,12 +198,4 @@ where
             .raw_call("pongAllLastUser")
             .original_result()
     }
-}
-
-#[type_abi]
-#[derive(TopEncode, TopDecode)]
-pub enum UserStatus {
-    New,
-    Registered,
-    Withdrawn,
 }

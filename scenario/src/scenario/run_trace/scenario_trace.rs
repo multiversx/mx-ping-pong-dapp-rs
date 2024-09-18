@@ -6,7 +6,7 @@ use multiversx_my_chain_scenario_format::{
 use crate::{
     multiversx_sc::types::Address,
     scenario::{model::*, ScenarioRunner},
-    scenario_format::interpret_trait::IntoRaw,
+    my_scenario_format::interpret_trait::IntoRaw,
 };
 use std::{collections::HashMap, path::Path};
 

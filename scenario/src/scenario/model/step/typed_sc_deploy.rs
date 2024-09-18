@@ -11,7 +11,7 @@ use crate::{
         codec::TopEncodeMulti,
         types::{Address, CodeMetadata},
     },
-    scenario_format::interpret_trait::InterpreterContext,
+    my_scenario_format::interpret_trait::InterpreterContext,
     scenario_model::{BytesValue, TxResponse, TxResponseStatus},
 };
 

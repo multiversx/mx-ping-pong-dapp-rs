@@ -1,6 +1,6 @@
 use crate::{
     scenario::model::{BytesValue, CheckValue, CheckValueList},
-    scenario_format::{
+    my_scenario_format::{
         interpret_trait::{InterpretableFrom, InterpreterContext, IntoRaw},
         serde_raw::CheckLogRaw,
     },

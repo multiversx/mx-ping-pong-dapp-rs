@@ -73,7 +73,7 @@ impl Checkable<&[Vec<u8>]> for Vec<CheckValue<BytesValue>> {
 mod tests {
     use crate::{
         scenario::model::{BytesValue, CheckValue, Checkable, U64Value},
-        scenario_format::serde_raw::ValueSubTree,
+        my_scenario_format::serde_raw::ValueSubTree,
     };
 
     #[test]

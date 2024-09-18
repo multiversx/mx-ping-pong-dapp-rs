@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use actix_web::HttpResponse;
 use serde::{Deserialize, Serialize};
 use chrono::DateTime;
-use multiversx_sc_snippets::imports::RustBigUint;
+use multiversx_my_sc_snippets::imports::RustBigUint;
 
 #[derive(Deserialize, Serialize)]
 pub struct DeployReqBody {

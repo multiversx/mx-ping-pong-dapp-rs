@@ -2,7 +2,7 @@ use crate::{
     scenario::model::{
         AddressValue, BigUintValue, BytesKey, BytesValue, Esdt, EsdtObject, U64Value,
     },
-    scenario_format::{
+    my_scenario_format::{
         interpret_trait::{InterpretableFrom, InterpreterContext, IntoRaw},
         serde_raw::AccountRaw,
     },

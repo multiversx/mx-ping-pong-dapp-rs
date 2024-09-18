@@ -1,6 +1,6 @@
 use crate::{
     scenario::model::BytesKey,
-    scenario_format::{
+    my_scenario_format::{
         interpret_trait::{InterpretableFrom, InterpreterContext, IntoRaw},
         serde_raw::CheckEsdtMapContentsRaw,
     },

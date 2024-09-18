@@ -1,6 +1,6 @@
 [package]
 name = "multiversx-my-sc-snippets"
-version = "0.1.0"
+version = "0.53.0"
 edition = "2021"
 
 authors = ["MultiversX <contact@multiversx.com>"]
@@ -26,7 +26,7 @@ futures = "0.3"
 path = "../scenario"
 
 [dependencies.multiversx-my-chain-scenario-format]
-path = "../sdk/scenario-format"
+path = "../sdk/my-scenario-format"
 
 [dependencies.multiversx-my-sdk]
 path = "../sdk/core"

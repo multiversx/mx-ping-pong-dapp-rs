@@ -2,7 +2,7 @@ use multiversx_sc::types::H256;
 
 use crate::{
     api::StaticApi,
-    scenario_format::interpret_trait::{InterpretableFrom, InterpreterContext},
+    my_scenario_format::interpret_trait::{InterpretableFrom, InterpreterContext},
 };
 
 use crate::{

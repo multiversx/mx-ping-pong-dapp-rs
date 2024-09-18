@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use crate::{
-    scenario_format::serde_raw::StepRaw,
+    my_scenario_format::serde_raw::StepRaw,
     scenario_model::{Scenario, Step},
 };
 use multiversx_my_chain_scenario_format::interpret_trait::{InterpretableFrom, InterpreterContext};
