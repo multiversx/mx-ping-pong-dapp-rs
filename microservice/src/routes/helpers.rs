@@ -119,9 +119,9 @@ fn test_denominate_max_precision() {
     assert_eq!(result, "123456789012345680");
 }
 
-#[tokio::test]
+#[test]
 #[should_panic(expected = "Negative values are not allowed.")]
-async fn test_denominate_negative_value() {
+fn test_denominate_negative_value() {
     let value = -1.0;
     denominate(value);
 }
