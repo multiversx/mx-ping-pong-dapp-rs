@@ -22,67 +22,44 @@ pub fn admin_panel() -> Html {
     let addr_modal_arrow_id = use_state(|| IconId::LucideMaximize2);
     let is_loading: UseStateHandle<bool> = use_state(|| false);
 
+    let deadline_query_response_content = use_state(String::new);
+    let timestamp_query_response_content = use_state(String::new);
+    let max_funds_query_response_content = use_state(String::new);
+    let ping_amount_query_response_content = use_state(String::new);
+
     let query_service = {
         let config = Rc::clone(&context.config);
         let user_address = user_addresses_result.clone();
-        let set_deadline = context.set_deadline.clone();
-        let set_timestamp = context.set_timestamp.clone();
-        let set_max_funds = context.set_max_funds.clone();
-        let set_ping_amount = context.set_ping_amount.clone();
+        let deadline_query_response_content = deadline_query_response_content.clone();
+        let timestamp_query_response_content = timestamp_query_response_content.clone();
+        let max_funds_query_response_content = max_funds_query_response_content.clone();
+        let ping_amount_query_response_content = ping_amount_query_response_content.clone();
+        let context = context.clone();
 
         Callback::from(move |query_type: query::QueryType| {
             let config = Rc::clone(&config);
-            let set_deadline = set_deadline.clone();
-            let set_timestamp = set_timestamp.clone();
-            let set_max_funds = set_max_funds.clone();
-            let set_ping_amount = set_ping_amount.clone();
             let set_user_address = user_address.clone();
+            let deadline_query_response_content = deadline_query_response_content.clone();
+            let timestamp_query_response_content = timestamp_query_response_content.clone();
+            let max_funds_query_response_content = max_funds_query_response_content.clone();
+            let ping_amount_query_response_content = ping_amount_query_response_content.clone();
+            let context = context.clone();
 
             wasm_bindgen_futures::spawn_local(async move {
                 let config_borrowed = config.borrow().clone();
 
                 match query_type {
-                    query::QueryType::Deadline => match query::get_deadline(&config_borrowed).await
-                    {
-                        Ok(result) => {
-                            set_deadline.emit(result["response"].as_str().unwrap().to_string());
-                        }
-                        Err(err) => {
-                            log::error!("Query failed for deadline: {:?}", err);
-                        }
-                    },
+                    query::QueryType::Deadline => {
+                        deadline_query_response_content.set(context.deadline.clone());
+                    }
                     query::QueryType::Timestamp => {
-                        match query::get_timestamp(&config_borrowed).await {
-                            Ok(result) => {
-                                set_timestamp
-                                    .emit(result["response"].as_str().unwrap().to_string());
-                            }
-                            Err(err) => {
-                                log::error!("Query failed for timestamp: {:?}", err);
-                            }
-                        }
+                        timestamp_query_response_content.set(context.timestamp.clone());
                     }
                     query::QueryType::MaxFunds => {
-                        match query::get_max_funds(&config_borrowed).await {
-                            Ok(result) => {
-                                set_max_funds
-                                    .emit(result["response"].as_str().unwrap().to_string());
-                            }
-                            Err(err) => {
-                                log::error!("Query failed for max funds: {:?}", err);
-                            }
-                        }
+                        max_funds_query_response_content.set(context.max_funds.clone());
                     }
                     query::QueryType::PingAmount => {
-                        match query::get_ping_amount(&config_borrowed).await {
-                            Ok(result) => {
-                                set_ping_amount
-                                    .emit(result["response"].as_str().unwrap().to_string());
-                            }
-                            Err(err) => {
-                                log::error!("Query failed for ping amount: {:?}", err);
-                            }
-                        }
+                        ping_amount_query_response_content.set(context.ping_amount.clone());
                     }
                     query::QueryType::UserAddresses => {
                         match query::get_user_addresses(&config_borrowed).await {
@@ -305,7 +282,7 @@ pub fn admin_panel() -> Html {
                 if !context.deadline.is_empty() {
                     html! {
                         <>
-                            <p>{ &context.deadline }</p>
+                            <p>{ (*deadline_query_response_content).clone() }</p>
                         </>
                     }
                 }
@@ -317,7 +294,7 @@ pub fn admin_panel() -> Html {
                 if !context.timestamp.is_empty() {
                     html! {
                         <>
-                            <p>{ &context.timestamp }</p>
+                            <p>{ (*timestamp_query_response_content).clone() }</p>
                         </>
                     }
                 }
@@ -329,7 +306,7 @@ pub fn admin_panel() -> Html {
                 if !context.max_funds.is_empty() {
                     html! {
                         <>
-                            <p>{ &context.max_funds }</p>
+                            <p>{ (*max_funds_query_response_content).clone() }</p>
                         </>
                     }
                 }
@@ -341,7 +318,7 @@ pub fn admin_panel() -> Html {
                 if !context.ping_amount.is_empty() {
                     html! {
                         <>
-                            <p>{ &context.ping_amount }</p>
+                            <p>{ (*ping_amount_query_response_content).clone() }</p>
                         </>
                     }
                 }
