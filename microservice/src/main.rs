@@ -4,6 +4,7 @@ use dotenv::dotenv;
 use redis::Client;
 use routes::{query_configuration, setup_configuration, tx_configuration};
 use std::env;
+
 mod routes;
 
 #[actix_web::main]

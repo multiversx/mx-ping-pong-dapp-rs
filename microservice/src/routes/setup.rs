@@ -1,6 +1,8 @@
+use std::str::FromStr;
+
 use actix_web::{get, post, Responder};
 use actix_web::{web, HttpResponse};
-use imports::{bech32, Bech32Address, OptionalValue, ReturnsNewAddress, RustBigUint};
+use imports::{bech32, Bech32Address, BigUint, OptionalValue, ReturnsNewAddress, RustBigUint};
 use interactor::ContractInteract;
 use serde_json::json;
 
@@ -22,10 +24,10 @@ pub async fn setup_contract(
     let contract_code = contract_interact.contract_code.clone();
     let wallet_address = Bech32Address::from_bech32_string(deployer);
 
-    let ping_amount = RustBigUint::from(amount);
+    let ping_amount = RustBigUint::from_str(&amount).unwrap();
     let duration_in_seconds = duration;
     let opt_activation_timestamp: Option<u64> = None;
-    let max_funds = OptionalValue::Some(RustBigUint::from(max_funds));
+    let max_funds = OptionalValue::Some(RustBigUint::from_str(&max_funds).unwrap());
 
     let new_address = contract_interact
         .interactor
@@ -34,7 +36,7 @@ pub async fn setup_contract(
         .gas(30_000_000u64)
         .typed(proxy::PingPongProxy)
         .init(
-            ping_amount,
+            BigUint::from(&ping_amount),
             duration_in_seconds,
             opt_activation_timestamp,
             max_funds,
@@ -63,7 +65,7 @@ pub async fn setup_contract(
         .await
         .expect("Failed to flush Redis");
 
-    format!("new address: {new_address_bech32}")
+    DeployResponse::new(("ok".to_string(), new_address_bech32)).response()
 }
 
 #[get("/contract_address")]

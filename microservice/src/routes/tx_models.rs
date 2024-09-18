@@ -1,5 +1,6 @@
-use crate::routes::helpers::denominate;
+use crate::routes::helpers::{denominate, nominated_str};
 use actix_web::HttpResponse;
+use multiversx_sc_snippets::imports::RustBigUint;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
@@ -12,7 +13,7 @@ pub struct DeployReqBody {
 }
 
 impl DeployReqBody {
-    pub fn get_tx_sending_values(&self) -> (u128, u128, String, u64, String) {
+    pub fn get_tx_sending_values(&self) -> (String, String, String, u64, String) {
         (
             denominate(self.ping_amount),
             denominate(self.max_funds),
@@ -45,25 +46,28 @@ impl DeployResponse {
 
 #[derive(Deserialize, Serialize)]
 pub struct PingReqBody {
-    pub sender: String,
     pub value: f64,
 }
 
 impl PingReqBody {
-    pub fn get_tx_sending_values(&self) -> (u128, String) {
-        (denominate(self.value), self.sender.clone())
+    pub fn get_denominated_amount(&self) -> String {
+        denominate(self.value)
     }
 }
 
 #[derive(Deserialize, Serialize)]
 pub struct PingResponse {
     response: String,
+    amount: String,
 }
 
 #[allow(unused)]
 impl PingResponse {
-    pub fn new(response: String) -> Self {
-        Self { response }
+    pub fn new(response: String, amount: RustBigUint) -> Self {
+        Self {
+            response,
+            amount: nominated_str(amount),
+        }
     }
 
     pub fn response(&self) -> HttpResponse {
@@ -72,23 +76,11 @@ impl PingResponse {
 }
 
 #[derive(Deserialize, Serialize)]
-pub struct PongReqBody {
-    pub sender: String,
-}
-
-impl PongReqBody {
-    pub fn get_tx_sending_values(&self) -> String {
-        self.sender.clone()
-    }
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct PongResponse {
+pub struct SuccessTxResponse {
     response: String,
 }
 
-#[allow(unused)]
-impl PongResponse {
+impl SuccessTxResponse {
     pub fn new(response: String) -> Self {
         Self { response }
     }
