@@ -51,3 +51,11 @@ pub async fn get_user_addresses(config: &Config) -> Result<Value, Value> {
 
     request::get_request("user_addresses", &endpoint).await
 }
+
+pub async fn get_contract_addr(config: &Config) -> Result<Value, Value> {
+    let setup_url = &config.setup_url;
+    let dest = &config.dest;
+    let endpoint = format!("http://{dest}{setup_url}");
+
+    request::get_request("contract_address", &endpoint).await
+}

@@ -1,33 +1,53 @@
-#!/bin/bash
-
 cleanup() {
     echo "Stopping all processes..."
-    kill $(jobs -p) 2>/dev/null
+    
+    # Try to terminate all processes with SIGTERM
+    kill $MICROSERVICE_PID $FRONTEND_PID $REDIS_PID 2>/dev/null
+    
+    echo "All processes stopped."
     exit 0
 }
 
-trap cleanup SIGINT SIGTERM
+trap cleanup SIGINT SIGTERM SIGTSTP
 trap cleanup EXIT
 
 BASE_DIR=$(pwd)
 
-cargo run --bin microservice &
-MICROSERVICE_PID=$!
+# Start Redis
+redis-server &
+REDIS_PID=$!
 
-if [ $? -ne 0 ]; then
-    echo "Failed to start the microservice."
+# Check if Redis started successfully
+if ! kill -0 $REDIS_PID 2>/dev/null; then
+    echo "Failed to start Redis."
     exit 1
 fi
 
+# Start microservice
+cargo run --bin microservice &
+MICROSERVICE_PID=$!
+
+# Check if microservice started successfully
+if ! kill -0 $MICROSERVICE_PID 2>/dev/null; then
+    echo "Failed to start the microservice."
+    kill $REDIS_PID
+    exit 1
+fi
+
+# Start frontend
 cd "$BASE_DIR/frontend"
 trunk serve --open &
 FRONTEND_PID=$!
 
-if [ $? -ne 0 ]; then
+# Check if frontend started successfully
+if ! kill -0 $FRONTEND_PID 2>/dev/null; then
     echo "Failed to start trunk."
     kill $MICROSERVICE_PID
+    kill $REDIS_PID
     exit 1
 fi
 
+# Wait for all processes to finish
 wait $MICROSERVICE_PID
 wait $FRONTEND_PID
+wait $REDIS_PID

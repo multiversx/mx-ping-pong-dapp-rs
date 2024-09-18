@@ -4,8 +4,7 @@ use dotenv::dotenv;
 use redis::Client;
 use routes::{query_configuration, setup_configuration, tx_configuration};
 use std::env;
-mod shared_state;
-pub use shared_state::AppState;
+
 mod routes;
 
 #[actix_web::main]
@@ -40,7 +39,7 @@ async fn main() -> std::io::Result<()> {
             .service(web::scope("/query").configure(query_configuration))
             .service(web::scope("/tx").configure(tx_configuration))
     })
-    .bind("127.0.0.1:8088")?
+    .bind("127.0.0.1:8089")?
     .run()
     .await
 }
