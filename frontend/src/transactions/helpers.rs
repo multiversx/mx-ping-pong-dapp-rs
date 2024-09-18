@@ -1,7 +1,7 @@
 use core::panic;
 use std::cmp::Ordering;
 
-use multiversx_sc_snippets::imports::RustBigUint;
+// use multiversx_sc_snippets::imports::RustBigUint;
 
 pub fn denominate(value: f64) -> String {
     let mut nominated_value = value.to_string();

@@ -18,7 +18,7 @@ pub async fn ping(amount: String) -> Result<Value, Value> {
         "value": ping_amount
     });
 
-    request::post_request_at_home("ping", Some(&body)).await
+    request::post_request_at_home().await
 
     //request::post_request("ping", &endpoint, Some(&body)).await
 }
