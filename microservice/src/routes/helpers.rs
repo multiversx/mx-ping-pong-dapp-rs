@@ -42,8 +42,7 @@ pub fn denominate(value: f64) -> String {
                     let zeros_left = 18usize - decimal_part.len();
                     decimal_part.push_str(&"0".repeat(zeros_left));
                 }
-                Ordering::Equal => {
-                }
+                Ordering::Equal => {}
             }
 
             let result = integer_part + &decimal_part;
@@ -92,29 +91,29 @@ pub fn readable_timestamp(timestamp: u64) -> String {
     datetime.to_string()
 }
 
-#[tokio::test]
-async fn test_denominate_zero() {
+#[test]
+fn test_denominate_zero() {
     let value = 0.0;
     let result = denominate(value);
     assert_eq!(result, "0");
 }
 
-#[tokio::test]
-async fn test_denominate_positive_integer() {
+#[test]
+fn test_denominate_positive_integer() {
     let value = 1234.0;
     let result = denominate(value);
     assert_eq!(result, "1234000000000000000000");
 }
 
-#[tokio::test]
-async fn test_denominate_positive_float() {
+#[test]
+fn test_denominate_positive_float() {
     let value = 12.345678901234567;
     let result = denominate(value);
     assert_eq!(result, "12345678901234567000");
 }
 
-#[tokio::test]
-async fn test_denominate_max_precision() {
+#[test]
+fn test_denominate_max_precision() {
     let value = 0.12345678901234568;
     let result = denominate(value);
     assert_eq!(result, "123456789012345680");
@@ -127,43 +126,43 @@ async fn test_denominate_negative_value() {
     denominate(value);
 }
 
-#[tokio::test]
-async fn test_nominated_str_zero() {
+#[test]
+fn test_nominated_str_zero() {
     let value = RustBigUint::from(0u32);
     let result = nominated_str(value);
     assert_eq!(result, "0");
 }
 
-#[tokio::test]
-async fn test_nominated_str_less_than_18_digits() {
+#[test]
+fn test_nominated_str_less_than_18_digits() {
     let value = RustBigUint::from(12345u32);
     let result = nominated_str(value);
     assert_eq!(result, "0.000000000000012345");
 }
 
-#[tokio::test]
-async fn test_nominated_str_exactly_18_digits() {
+#[test]
+fn test_nominated_str_exactly_18_digits() {
     let value = RustBigUint::parse_bytes(b"123456789012345678", 10).unwrap();
     let result = nominated_str(value);
     assert_eq!(result, "0.123456789012345678");
 }
 
-#[tokio::test]
-async fn test_nominated_str_more_than_18_digits() {
+#[test]
+fn test_nominated_str_more_than_18_digits() {
     let value = RustBigUint::parse_bytes(b"123456789012345678901234567890", 10).unwrap();
     let result = nominated_str(value);
     assert_eq!(result, "123456789012.34567890123456789");
 }
 
-#[tokio::test]
-async fn test_nominated_str_trailing_zeros() {
+#[test]
+fn test_nominated_str_trailing_zeros() {
     let value = RustBigUint::parse_bytes(b"1000000000000000000000", 10).unwrap();
     let result = nominated_str(value);
     assert_eq!(result, "1000.0000");
 }
 
-#[tokio::test]
-async fn test_nominated_str_no_decimal() {
+#[test]
+fn test_nominated_str_no_decimal() {
     let value = RustBigUint::parse_bytes(b"1000000000000000000000000", 10).unwrap();
     let result = nominated_str(value);
     assert_eq!(result, "1000000.0000");

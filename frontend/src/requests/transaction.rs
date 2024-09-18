@@ -1,8 +1,6 @@
-use serde_json::{json, Value};
-
-use crate::config::Config;
-
 use super::request;
+use crate::config::Config;
+use serde_json::{json, Value};
 
 pub enum TransactionType {
     Ping,

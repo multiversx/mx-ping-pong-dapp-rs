@@ -4,7 +4,7 @@ use yew::prelude::*;
 use crate::{
     components::Button,
     context::ConfigContext,
-    requests::{query, transaction::{self, TransactionType}},
+    requests::{query, transaction},
 };
 
 #[function_component(AdminPanel)]
@@ -42,7 +42,7 @@ pub fn admin_panel() -> Html {
         let transaction_result = transaction_result.clone();
         let config = Rc::clone(&context.config);
 
-        Callback::from(move |tx_type: TransactionType| {
+        Callback::from(move |tx_type: transaction::TransactionType| {
             let transaction_result = transaction_result.clone();
             let config = Rc::clone(&config);
 
@@ -51,36 +51,42 @@ pub fn admin_panel() -> Html {
             wasm_bindgen_futures::spawn_local(async move {
                 let config_borrowed = config.borrow().clone();
                 match tx_type {
-                    TransactionType::Ping => match transaction::ping(&config_borrowed).await {
-                        Ok(result) => {
-                            transaction_result.set(format!(
-                                "Pinged successfully with {} EGLD",
-                                result["amount"].as_str().unwrap()
-                            ));
+                    transaction::TransactionType::Ping => {
+                        match transaction::ping(&config_borrowed).await {
+                            Ok(result) => {
+                                transaction_result.set(format!(
+                                    "Pinged successfully with {} EGLD",
+                                    result["amount"].as_str().unwrap()
+                                ));
+                            }
+                            Err(err) => {
+                                log::error!("Transaction failed: {:?}", err);
+                                transaction_result.set("Ping failed!".to_string());
+                            }
                         }
-                        Err(err) => {
-                            log::error!("Transaction failed: {:?}", err);
-                            transaction_result.set("Ping failed!".to_string());
+                    }
+                    transaction::TransactionType::Pong => {
+                        match transaction::pong(&config_borrowed).await {
+                            Ok(_result) => {
+                                transaction_result.set("Ponged successfully".to_string());
+                            }
+                            Err(err) => {
+                                log::error!("Transaction failed: {:?}", err);
+                                transaction_result.set("Pong failed!".to_string());
+                            }
                         }
-                    },
-                    TransactionType::Pong => match transaction::pong(&config_borrowed).await {
-                        Ok(_result) => {
-                            transaction_result.set("Ponged successfully".to_string());
+                    }
+                    transaction::TransactionType::PongAll => {
+                        match transaction::pong_all(&config_borrowed).await {
+                            Ok(_result) => {
+                                transaction_result.set("Ponged all successfully".to_string());
+                            }
+                            Err(err) => {
+                                log::error!("Transaction failed: {:?}", err);
+                                transaction_result.set("Pong all failed!".to_string());
+                            }
                         }
-                        Err(err) => {
-                            log::error!("Transaction failed: {:?}", err);
-                            transaction_result.set("Pong failed!".to_string());
-                        }
-                    },
-                    TransactionType::PongAll => match transaction::pong_all(&config_borrowed).await {
-                        Ok(_result) => {
-                            transaction_result.set("Ponged all successfully".to_string());
-                        }
-                        Err(err) => {
-                            log::error!("Transaction failed: {:?}", err);
-                            transaction_result.set("Pong all failed!".to_string());
-                        }
-                    },
+                    }
                 }
             });
         })
@@ -119,9 +125,9 @@ pub fn admin_panel() -> Html {
         <h2>{"Ping Pong Admin Panel"}</h2>
         <div class = "admin-panel-btns">
                 <Button name="Query" class_name="query-btn" button_type = "button" on_click={query_service.clone()} />
-                <Button name = "Ping" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Ping)} />
-                <Button name = "Pong" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Pong)} />
-                <Button name = "Pong all" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::PongAll)} />
+                <Button name = "Ping" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| transaction::TransactionType::Ping)} />
+                <Button name = "Pong" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| transaction::TransactionType::Pong)} />
+                <Button name = "Pong all" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| transaction::TransactionType::PongAll)} />
                 <Button name = "SC Setup" class_name = "transaction-btn" button_type = "button" on_click={sc_setup_service.clone()} />
         </div>
             {
