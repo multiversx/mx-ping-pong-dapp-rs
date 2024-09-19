@@ -6,8 +6,8 @@ use imports::{bech32, Bech32Address, BigUint, OptionalValue, ReturnsNewAddress, 
 use interactor::ContractInteract;
 use serde_json::json;
 
+use crate::routes::model::{DeployReqBody, DeployResponse};
 use crate::routes::proxy;
-use crate::routes::tx_models::*;
 use multiversx_sc_snippets::*;
 use redis::Client;
 
