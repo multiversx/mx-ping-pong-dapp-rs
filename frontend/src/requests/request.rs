@@ -1,7 +1,7 @@
 use reqwest::Client;
 use serde_json::{json, Value};
 
-pub async fn get_request(name: &str, full_endpoint: &str) -> Result<String, String> {
+pub async fn get_request(name: &str, full_endpoint: &str) -> Result<Value, Value> {
     let client = Client::new();
     let response = client
         .get(full_endpoint)
@@ -11,12 +11,12 @@ pub async fn get_request(name: &str, full_endpoint: &str) -> Result<String, Stri
 
     if response.status().is_success() {
         let body = response
-            .text()
+            .json()
             .await
             .map_err(|err| format!("Failed to read response body: {:?}", err))?;
         Ok(body)
     } else {
-        Err(format!("Server error: {:?}", response.status()))
+        Err(json!(format!("Server error: {:?}", response.status())))
     }
 }
 

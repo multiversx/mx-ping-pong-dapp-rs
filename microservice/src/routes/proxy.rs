@@ -45,7 +45,7 @@ where
     Gas: TxGas<Env>,
 {
     /// Necessary configuration when deploying: 
-    /// `ping_amount` - the exact EGLD amounf that needs to be sent when `ping`-ing. 
+    /// `ping_amount` - the exact EGLD amount that needs to be sent when `ping`-ing. 
     /// `duration_in_seconds` - how much time (in seconds) until contract expires. 
     /// `opt_activation_timestamp` - optionally specify the contract to only actvivate at a later date. 
     /// `max_funds` - optional funding cap, no more funds than this can be added to the contract. 
@@ -81,12 +81,25 @@ where
     To: TxTo<Env>,
     Gas: TxGas<Env>,
 {
-    pub fn upgrade(
+    pub fn upgrade<
+        Arg0: ProxyArg<BigUint<Env::Api>>,
+        Arg1: ProxyArg<u64>,
+        Arg2: ProxyArg<Option<u64>>,
+        Arg3: ProxyArg<OptionalValue<BigUint<Env::Api>>>,
+    >(
         self,
+        ping_amount: Arg0,
+        duration_in_seconds: Arg1,
+        opt_activation_timestamp: Arg2,
+        max_funds: Arg3,
     ) -> TxTypedUpgrade<Env, From, To, NotPayable, Gas, ()> {
         self.wrapped_tx
             .payment(NotPayable)
             .raw_upgrade()
+            .argument(&ping_amount)
+            .argument(&duration_in_seconds)
+            .argument(&opt_activation_timestamp)
+            .argument(&max_funds)
             .original_result()
     }
 }
@@ -147,6 +160,17 @@ where
         self.wrapped_tx
             .payment(NotPayable)
             .raw_call("getUserAddresses")
+            .original_result()
+    }
+
+    /// Returns the current contract state as a struct 
+    /// for faster fetching from external parties 
+    pub fn get_contract_state(
+        self,
+    ) -> TxTypedCall<Env, From, To, NotPayable, Gas, ContractState<Env::Api>> {
+        self.wrapped_tx
+            .payment(NotPayable)
+            .raw_call("getContractState")
             .original_result()
     }
 
@@ -219,7 +243,20 @@ where
 }
 
 #[type_abi]
-#[derive(TopEncode, TopDecode)]
+#[derive(TopEncode, TopDecode, Default)]
+pub struct ContractState<Api>
+where
+    Api: ManagedTypeApi,
+{
+    pub ping_amount: BigUint<Api>,
+    pub deadline: u64,
+    pub activation_timestamp: u64,
+    pub max_funds: Option<BigUint<Api>>,
+    pub pong_all_last_user: usize,
+}
+
+#[type_abi]
+#[derive(TopEncode, TopDecode, PartialEq, Eq, Clone, Copy)]
 pub enum UserStatus {
     New,
     Registered,

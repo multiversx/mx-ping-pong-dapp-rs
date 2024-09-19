@@ -166,7 +166,7 @@ pub async fn get_user_addresses(redis_client: web::Data<Client>) -> impl Respond
     match user_addresses_cached_value {
         Ok(user_addresses_json) => {
             let user_addresses: Vec<String> = serde_json::from_str(&user_addresses_json).unwrap();
-            QueryArrayResponse::new(user_addresses).response()
+            QueryResponse::<QuerryArray>::new(user_addresses).response()
         }
         Err(_) => {
             let current_address = contract_interact.state.current_address().clone();
@@ -195,7 +195,61 @@ pub async fn get_user_addresses(redis_client: web::Data<Client>) -> impl Respond
                 .await
                 .unwrap();
 
-            QueryArrayResponse::new(serializable_result_addresses).response()
+            QueryResponse::<QuerryArray>::new(serializable_result_addresses).response()
+        }
+    }
+}
+
+#[get("/contract_state")]
+pub async fn get_contract_state(redis_client: web::Data<Client>) -> impl Responder {
+    let mut contract_interact = ContractInteract::new().await;
+
+    let mut con = redis_client
+        .get_multiplexed_async_connection()
+        .await
+        .unwrap();
+
+    // already deserialized
+    let contract_state_cached_value: Result<ContractState, RedisError> =
+        con.get("contract_state").await;
+
+    log::info!("cached from redis {contract_state_cached_value:?}");
+    println!("cached from redis {contract_state_cached_value:?}");
+
+    match contract_state_cached_value {
+        Ok(value) => QueryResponse::<ContractState>::new(value).response(),
+        Err(_) => {
+            let current_address = contract_interact.state.current_address().clone();
+
+            let result_value = contract_interact
+                .interactor
+                .query()
+                .to(current_address)
+                .typed(proxy::PingPongProxy)
+                .get_contract_state()
+                .returns(ReturnsResultUnmanaged)
+                .prepare_async()
+                .run()
+                .await;
+
+            let contract_state = ContractState {
+                ping_amount: result_value.ping_amount.to_display().to_string(),
+                deadline: result_value.deadline,
+                activation_timestamp: result_value.activation_timestamp,
+                max_funds: result_value
+                    .max_funds
+                    .map(|num| num.to_display().to_string()),
+                pong_all_last_user: result_value.pong_all_last_user,
+            };
+
+            let serialized_response = serde_json::to_string(&contract_state).unwrap();
+
+            let _: () = con
+                .set("contract_state", serialized_response)
+                .await
+                .unwrap();
+
+            QueryResponse::<ContractState>::new(contract_state).response()
         }
     }
 }
@@ -205,5 +259,6 @@ pub fn query_configuration(cfg: &mut web::ServiceConfig) {
         .service(get_timestamp)
         .service(get_max_funds)
         .service(get_ping_amount)
-        .service(get_user_addresses);
+        .service(get_user_addresses)
+        .service(get_contract_state);
 }

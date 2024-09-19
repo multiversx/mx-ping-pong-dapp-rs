@@ -1,40 +1,21 @@
 use std::rc::Rc;
 use yew::prelude::*;
 
-use crate::{
-    components::Button,
-    context::ConfigContext,
-    requests::{query, transaction},
-};
+use crate::{components::Button, context::ConfigContext, requests::transaction};
 
 #[function_component(AdminPanel)]
 pub fn admin_panel() -> Html {
     let context = use_context::<ConfigContext>().expect("Failed to get config context");
+    let show_deadline = use_state(bool::default);
 
     let setup_result = use_state(String::new);
     let transaction_result = use_state(String::new);
 
-    let query_service = {
-        let config = Rc::clone(&context.config);
-        let set_deadline = context.set_deadline.clone();
+    let get_deadline_service = {
+        let show_deadline = show_deadline.clone();
 
         Callback::from(move |_| {
-            let config = Rc::clone(&config);
-            let set_deadline = set_deadline.clone();
-
-            log::info!("Query request triggered");
-
-            wasm_bindgen_futures::spawn_local(async move {
-                let config_borrowed = config.borrow().clone();
-                match query::get_deadline(&config_borrowed).await {
-                    Ok(result) => {
-                        set_deadline.emit(result);
-                    }
-                    Err(err) => {
-                        log::error!("Query failed: {:?}", err);
-                    }
-                }
-            });
+            show_deadline.set(true);
         })
     };
 
@@ -124,17 +105,17 @@ pub fn admin_panel() -> Html {
         <div class = "admin">
         <h2>{"Ping Pong Admin Panel"}</h2>
         <div class = "admin-panel-btns">
-                <Button name="Query" class_name="query-btn" button_type = "button" on_click={query_service.clone()} />
+                <Button name="Deadline" class_name="query-btn" button_type = "button" on_click={get_deadline_service.clone()} />
                 <Button name = "Ping" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| transaction::TransactionType::Ping)} />
                 <Button name = "Pong" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| transaction::TransactionType::Pong)} />
                 <Button name = "Pong all" class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| transaction::TransactionType::PongAll)} />
                 <Button name = "SC Setup" class_name = "transaction-btn" button_type = "button" on_click={sc_setup_service.clone()} />
         </div>
             {
-                if !context.deadline.is_empty() {
+                if *show_deadline {
                     html! {
                         <>
-                            <p>{ &context.deadline }</p>
+                            <p>{ &context.contract_state.deadline }</p>
                         </>
                     }
                 }
