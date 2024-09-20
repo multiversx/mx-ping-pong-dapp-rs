@@ -1,5 +1,5 @@
-use std::env;
 use dotenv::dotenv;
+use std::env;
 use std::str::FromStr;
 
 use actix_web::{get, post, Responder};
@@ -75,8 +75,7 @@ pub async fn get_contract_address() -> impl Responder {
     let contract_interact = ContractInteract::new().await;
     dotenv().ok();
 
-    HttpResponse::Ok()
-        .json(json!({"contract_address": env::var("CONTRACT_ADDRESS").unwrap().to_string()}))
+    HttpResponse::Ok().json(json!({"response": env::var("CONTRACT_ADDRESS").unwrap().to_string()}))
 }
 
 pub fn setup_configuration(cfg: &mut web::ServiceConfig) {
