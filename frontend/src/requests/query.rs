@@ -2,12 +2,20 @@ use crate::{config::Config, requests::ApiResponse};
 
 use super::{request, ContractState};
 
-pub async fn _get_deadline(config: &Config) -> Result<String, String> {
-    let query_url = &config.query_url;
-    let dest = &config.dest;
-    let full_endpoint = format!("http://{dest}{query_url}/deadline");
+pub enum QueryType {
+    Deadline,
+    Timestamp,
+    MaxFunds,
+    PingAmount,
+    UserAddresses,
+}
 
-    let response = request::get_request("get_deadline", &full_endpoint).await;
+pub async fn get_contract_addr(config: &Config) -> Result<String, String> {
+    let setup_url = &config.setup_url;
+    let dest = &config.dest;
+    let endpoint = format!("http://{dest}{setup_url}");
+
+    let response = request::get_request("contract_address", &endpoint).await;
 
     match response {
         Ok(value) => match serde_json::from_value::<ApiResponse<String>>(value) {
@@ -21,9 +29,9 @@ pub async fn _get_deadline(config: &Config) -> Result<String, String> {
 pub async fn get_contract_state(config: &Config) -> Result<ContractState, String> {
     let query_url = &config.query_url;
     let dest = &config.dest;
-    let full_endpoint = format!("http://{dest}{query_url}/contract_state");
+    let endpoint = format!("http://{dest}{query_url}");
 
-    let response = request::get_request("get_contract_state", &full_endpoint).await;
+    let response = request::get_request("contract_state", &endpoint).await;
 
     match response {
         Ok(value) => match serde_json::from_value::<ApiResponse<ContractState>>(value) {

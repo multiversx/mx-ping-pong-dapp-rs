@@ -40,7 +40,7 @@ async fn main() -> std::io::Result<()> {
             .service(web::scope("/query").configure(query_configuration))
             .service(web::scope("/tx").configure(tx_configuration))
     })
-    .bind("127.0.0.1:8089")?
+    .bind("127.0.0.1:8088")?
     .run()
     .await
 }

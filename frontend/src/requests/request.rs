@@ -1,8 +1,9 @@
 use reqwest::Client;
 use serde_json::{json, Value};
 
-pub async fn get_request(name: &str, full_endpoint: &str) -> Result<Value, Value> {
+pub async fn get_request(name: &str, endpoint: &str) -> Result<Value, Value> {
     let client = Client::new();
+    let full_endpoint = format!("{endpoint}/{name}");
     let response = client
         .get(full_endpoint)
         .send()
