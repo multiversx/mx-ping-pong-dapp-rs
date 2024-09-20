@@ -7,5 +7,3 @@ pub mod query_models;
 pub use proxy::*;
 #[allow(unused)]
 pub use query::*;
-#[allow(unused)]
-pub use setup::*;
