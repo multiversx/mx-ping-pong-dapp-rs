@@ -31,6 +31,7 @@ pub async fn ping_tx() -> SuccessTxResponse {
         "guardianSignature": ""
     }"#;
 
+
     let opts = RequestInit::new();
     opts.set_method("POST");
     opts.set_mode(RequestMode::Cors);

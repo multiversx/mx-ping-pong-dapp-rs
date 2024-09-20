@@ -1,7 +1,5 @@
-use serde_json::{json, Value};
 use reqwest::Client;
-
-use crate::transactions::ping_tx;
+use serde_json::{json, Value};
 
 pub async fn get_request(name: &str, endpoint: &str) -> Result<Value, Value> {
     let client = Client::new();
@@ -59,9 +57,9 @@ pub async fn post_request(
 }
 
 pub async fn post_request_at_home() -> Result<Value, Value> {
-    let ping_response = ping_tx().await;
+    // let ping_response = ping_tx().await;
 
     Ok(json!({
-        "status": ping_response.response
+        "response": "Ok"
     }))
 }

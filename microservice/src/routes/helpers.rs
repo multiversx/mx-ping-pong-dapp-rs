@@ -1,90 +1,14 @@
-use core::panic;
-use std::cmp::Ordering;
 use actix_web::HttpResponse;
-use serde::{Deserialize, Serialize};
 use chrono::DateTime;
+use core::panic;
 use multiversx_my_sc_snippets::imports::RustBigUint;
+use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
 
-#[derive(Deserialize, Serialize)]
-pub struct DeployReqBody {
-    pub ping_amount: f64,
-    pub max_funds: f64,
-    pub activation_timestamp: u64,
-    pub duration: u64,
-}
-
-impl DeployReqBody {
-    pub fn get_tx_sending_values(&self) -> (String, String, u64, u64) {
-        (
-            denominate(self.ping_amount),
-            denominate(self.max_funds),
-            self.activation_timestamp,
-            self.duration,
-        )
-    }
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct DeployResponse {
-    response: String,
-    address: String,
-}
-
-impl DeployResponse {
-    pub fn new(tx_response: (String, String)) -> Self {
-        Self {
-            response: tx_response.0,
-            address: tx_response.1,
-        }
-    }
-
-    pub fn send(&self) -> HttpResponse {
-        HttpResponse::Ok().json(self)
-    }
-}
-
-pub fn denominate(value: f64) -> String {
-    let mut nominated_value = value.to_string();
-
-    match nominated_value.chars().next() {
-        Some('0') => {
-            if nominated_value.chars().nth(1).unwrap() != '.' {
-                return "0".to_string();
-            }
-        }
-        Some('-') => {
-            panic!("Negative values are not allowed.");
-        }
-        _ => {}
-    }
-
-    if nominated_value.contains('.') {
-        let split_nominated: Vec<&str> = nominated_value.split('.').collect();
-        if split_nominated.len() != 2 {
-            panic!("Invalid nominated value.");
-        } else {
-            let integer_part = split_nominated[0].to_string();
-            let mut decimal_part = split_nominated[1].to_string();
-
-            match 18usize.cmp(&decimal_part.len()) {
-                Ordering::Less => {
-                    decimal_part = decimal_part[..18].to_string();
-                }
-                Ordering::Greater => {
-                    let zeros_left = 18usize - decimal_part.len();
-                    decimal_part.push_str(&"0".repeat(zeros_left));
-                }
-                Ordering::Equal => {
-                }
-            }
-
-            let result = integer_part + &decimal_part;
-            result.trim_start_matches('0').to_string()
-        }
-    } else {
-        nominated_value.push_str(&"0".repeat(18));
-        nominated_value
-    }
+pub fn readable_timestamp(timestamp: u64) -> String {
+    let datetime =
+        DateTime::from_timestamp(timestamp as i64, 0).expect("Failed to parse timestamp");
+    datetime.to_string()
 }
 
 pub fn nominated_str(value: RustBigUint) -> String {
@@ -115,10 +39,4 @@ pub fn nominated_str(value: RustBigUint) -> String {
             result.trim_end_matches('0').to_string()
         }
     }
-}
-
-pub fn readable_timestamp(timestamp: u64) -> String {
-    let datetime =
-        DateTime::from_timestamp(timestamp as i64, 0).expect("Failed to parse timestamp");
-    datetime.to_string()
 }

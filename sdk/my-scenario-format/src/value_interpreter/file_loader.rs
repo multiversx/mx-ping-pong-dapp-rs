@@ -1,3 +1,4 @@
+use core::panic;
 use serde::{Deserialize, Serialize};
 use std::{
     fs,
@@ -19,6 +20,7 @@ pub fn load_file<F: FnOnce(Vec<u8>) -> Vec<u8>>(
     let mut path_buf = context.context_path.clone();
     path_buf.push(file_path);
     path_buf = normalize_path(path_buf);
+
     fs::read(&path_buf)
         .map(process_content)
         .unwrap_or_else(|_| {
@@ -54,10 +56,10 @@ fn normalize_path<P: AsRef<Path>>(path: P) -> PathBuf {
                 if !normalized.pop() {
                     normalized.push(component);
                 }
-            },
+            }
             _ => {
                 normalized.push(component);
-            },
+            }
         }
     }
     if ends_with_slash {

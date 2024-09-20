@@ -55,7 +55,7 @@ where
         for step in &mut self.steps {
             step_buffer.refs.push(&mut step.step);
         }
-        self.env.world.multi_sc_exec(step_buffer).await;
+        // self.env.world.multi_sc_exec(step_buffer).await;
 
         self.steps
             .into_iter()

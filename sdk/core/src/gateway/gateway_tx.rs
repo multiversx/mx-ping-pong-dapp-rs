@@ -129,33 +129,38 @@ impl GatewayProxy {
         })
     }
 
-    pub fn send_transaction(&self, tx: &Transaction) {
+    pub fn send_transaction(&self, tx: &Transaction) -> String {
         let tx_str = to_string_pretty(&tx).unwrap();
         let endpoint = self.get_endpoint(SEND_TRANSACTION_ENDPOINT);
-    
+
         let window = web_sys::window().unwrap();
         let opts = RequestInit::new();
         opts.set_method("POST");
         opts.set_mode(RequestMode::Cors);
         opts.set_body(&JsValue::from_str(&tx_str));
-    
+
         let request = Request::new_with_str_and_init(&endpoint, &opts).unwrap();
-        request.headers().set("Content-Type", "application/json").unwrap();
-    
+        request
+            .headers()
+            .set("Content-Type", "application/json")
+            .unwrap();
+
         let fetch_promise = window.fetch_with_request(&request);
-    
+
         let on_success = Closure::wrap(Box::new(move |_response: JsValue| {
             alert("Transaction sent successfully!");
         }) as Box<dyn FnMut(JsValue)>);
-    
+
         let on_error = Closure::wrap(Box::new(move |_err: JsValue| {
             alert("Failed to send transaction!");
         }) as Box<dyn FnMut(JsValue)>);
-    
+
         fetch_promise.then(&on_success).catch(&on_error);
-    
+
         on_success.forget();
         on_error.forget();
+
+        "Ok".to_string()
     }
 
     pub async fn send_transactions(&self, txs: &Vec<Transaction>) -> Result<Vec<String>> {
@@ -178,7 +183,7 @@ impl GatewayProxy {
                 }
 
                 Ok(tx_hashs)
-            },
+            }
         }
     }
 

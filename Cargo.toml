@@ -1,4 +1,12 @@
 [workspace]
 resolver = "2"
 
-members = ["snippets", "microservice/src/interactor", "frontend", "sdk/core", "scenario", "sdk/my-scenario-format"]
+members = [
+    "snippets",
+    "microservice/src/interactor",
+    "frontend",
+    "sdk/core",
+    "scenario",
+    "sdk/my-scenario-format",
+    "microservice",
+]

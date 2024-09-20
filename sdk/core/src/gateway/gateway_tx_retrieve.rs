@@ -38,7 +38,7 @@ impl GatewayProxy {
 
                                 if GatewayProxy::is_issue_tx(&first_scr.data) {
                                     issue_found = true;
-                                    tokio::time::sleep(Duration::from_secs(30)).await;
+                                    // tokio::time::sleep(Duration::from_secs(30)).await;
                                     continue;
                                 }
                             }
@@ -48,12 +48,12 @@ impl GatewayProxy {
                                 status, transaction_info_with_results
                             );
                             return transaction_info_with_results;
-                        },
+                        }
                         _ => {
                             continue;
-                        },
+                        }
                     }
-                },
+                }
                 Err(err) => {
                     retries += 1;
                     if retries >= MAX_RETRIES {
@@ -63,9 +63,9 @@ impl GatewayProxy {
                     }
 
                     let backoff_time = backoff_delay.min(MAX_BACKOFF_DELAY);
-                    tokio::time::sleep(backoff_time).await;
+                    // tokio::time::sleep(backoff_time).await;
                     backoff_delay *= 2; // exponential backoff
-                },
+                }
             }
         }
 

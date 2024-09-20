@@ -11,6 +11,8 @@ trap cleanup EXIT
 
 BASE_DIR=$(pwd)
 
+redis-server &
+
 cargo run --bin microservice &
 MICROSERVICE_PID=$!
 

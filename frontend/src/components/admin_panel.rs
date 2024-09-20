@@ -1,8 +1,6 @@
-use std::{collections::HashMap, rc::Rc};
+use std::{collections::HashMap, rc::Rc, result};
 use yew::prelude::*;
 use yew_icons::IconId;
-
-// use multiversx_sc_snippets::*;
 
 use crate::{
     components::{Button, ContractAddressModal, QueryResponseModal, TxFormModal, TxStatusModal},
@@ -150,19 +148,19 @@ pub fn admin_panel() -> Html {
 
     let transaction_service = {
         let transaction_result = transaction_result.clone();
-        let config = Rc::clone(&context.config);
         let tx_status_modal_visible = tx_status_modal_visible.clone();
         let tx_status = tx_status.clone();
         let status_icon_id = status_icon_id.clone();
         let is_loading = is_loading.clone();
+        let context = context.clone();
 
         Callback::from(move |tx_type: TransactionType| {
             let transaction_result = transaction_result.clone();
-            let config = Rc::clone(&config);
             let tx_status_modal_visible = tx_status_modal_visible.clone();
             let tx_status = tx_status.clone();
             let status_icon_id = status_icon_id.clone();
             let is_loading = is_loading.clone();
+            let context = context.clone();
 
             if *is_loading {
                 log::info!("Transaction is already in progress");
@@ -177,19 +175,36 @@ pub fn admin_panel() -> Html {
             status_icon_id.set(IconId::FontAwesomeRegularHourglass);
 
             wasm_bindgen_futures::spawn_local(async move {
-                let config_borrowed = config.borrow().clone();
-
                 match tx_type {
                     TransactionType::Ping(amount) => {
-                        match transaction::ping(amount).await {
+                        match transaction::ping(&context.contract_address, amount).await {
                             Ok(result) => {
                                 transaction_result.set(format!(
                                     "Pinged successfully with {} EGLD",
                                     result["amount"].as_str().unwrap()
                                 ));
+
                                 tx_status_modal_visible.set(true);
-                                tx_status.set("Success".to_string());
-                                status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
+
+                                match result["code"].as_str() {
+                                    Some("0") => {
+                                        tx_status.set("Success".to_string());
+                                        status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
+                                    }
+                                    Some(_) => {
+                                        tx_status.set("Failed".to_string());
+                                        status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
+                                        log::error!(
+                                            "Transaction failed because: {:?}",
+                                            result["message"].as_str().unwrap()
+                                        );
+                                    }
+                                    None => {
+                                        tx_status.set("Failed".to_string());
+                                        status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
+                                        log::error!("Transaction failed with no code");
+                                    }
+                                }
                             }
                             Err(err) => {
                                 log::error!("Transaction failed: {:?}", err);
@@ -200,37 +215,77 @@ pub fn admin_panel() -> Html {
                             }
                         }
                     }
-                    TransactionType::Pong => match transaction::pong(&config_borrowed).await {
-                        Ok(_result) => {
-                            transaction_result.set("Ponged successfully".to_string());
-                            tx_status_modal_visible.set(true);
-                            tx_status.set("Success".to_string());
-                            status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
+                    TransactionType::Pong => {
+                        match transaction::pong(&context.contract_address).await {
+                            Ok(result) => {
+                                tx_status_modal_visible.set(true);
+
+                                match result["code"].as_str() {
+                                    Some("0") => {
+                                        tx_status.set("Success".to_string());
+                                        status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
+                                        transaction_result.set("Ponged successfully".to_string());
+                                    }
+                                    Some(_) => {
+                                        tx_status.set("Failed".to_string());
+                                        status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
+                                        log::error!(
+                                            "Transaction failed because: {:?}",
+                                            result["message"].as_str().unwrap()
+                                        );
+                                    }
+                                    None => {
+                                        tx_status.set("Failed".to_string());
+                                        status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
+                                        log::error!("Transaction failed with no code");
+                                    }
+                                }
+                            }
+                            Err(err) => {
+                                log::error!("Transaction failed: {:?}", err);
+                                transaction_result.set("Pong failed!".to_string());
+                                tx_status_modal_visible.set(true);
+                                tx_status.set("Failed".to_string());
+                                status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
+                            }
                         }
-                        Err(err) => {
-                            log::error!("Transaction failed: {:?}", err);
-                            transaction_result.set("Pong failed!".to_string());
-                            tx_status_modal_visible.set(true);
-                            tx_status.set("Failed".to_string());
-                            status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
+                    }
+                    TransactionType::PongAll => {
+                        match transaction::pong_all(&context.contract_address).await {
+                            Ok(result) => {
+                                tx_status_modal_visible.set(true);
+
+                                match result["code"].as_str() {
+                                    Some("0") => {
+                                        transaction_result
+                                            .set("Ponged all successfully".to_string());
+                                        tx_status.set("Success".to_string());
+                                        status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
+                                    }
+                                    Some(_) => {
+                                        tx_status.set("Failed".to_string());
+                                        status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
+                                        log::error!(
+                                            "Transaction failed because: {:?}",
+                                            result["message"].as_str().unwrap()
+                                        );
+                                    }
+                                    None => {
+                                        tx_status.set("Failed".to_string());
+                                        status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
+                                        log::error!("Transaction failed with no code");
+                                    }
+                                }
+                            }
+                            Err(err) => {
+                                log::error!("Transaction failed: {:?}", err);
+                                transaction_result.set("Pong all failed!".to_string());
+                                tx_status_modal_visible.set(true);
+                                tx_status.set("Failed".to_string());
+                                status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
+                            }
                         }
-                    },
-                    TransactionType::PongAll => match transaction::pong_all(&config_borrowed).await
-                    {
-                        Ok(_result) => {
-                            transaction_result.set("Ponged all successfully".to_string());
-                            tx_status_modal_visible.set(true);
-                            tx_status.set("Success".to_string());
-                            status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
-                        }
-                        Err(err) => {
-                            log::error!("Transaction failed: {:?}", err);
-                            transaction_result.set("Pong all failed!".to_string());
-                            tx_status_modal_visible.set(true);
-                            tx_status.set("Failed".to_string());
-                            status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
-                        }
-                    },
+                    }
                 }
                 is_loading.set(false);
             });
@@ -239,23 +294,21 @@ pub fn admin_panel() -> Html {
 
     let sc_setup_service = {
         let setup_result = setup_result.clone();
-        let config = Rc::clone(&context.config);
         let tx_status_modal_visible = tx_status_modal_visible.clone();
         let tx_status = tx_status.clone();
         let status_icon_id = status_icon_id.clone();
-        let set_contract_address = context.set_contract_address.clone();
         let is_loading = is_loading.clone();
         let deploy_modal_visible = deploy_modal_visible.clone();
+        let context = context.clone();
 
         Callback::from(move |form_values: HashMap<String, String>| {
             let setup_result = setup_result.clone();
-            let config = Rc::clone(&config);
             let tx_status_modal_visible = tx_status_modal_visible.clone();
             let tx_status = tx_status.clone();
             let status_icon_id = status_icon_id.clone();
-            let set_contract_address = set_contract_address.clone();
             let is_loading = is_loading.clone();
             let deploy_modal_visible = deploy_modal_visible.clone();
+            let context = context.clone();
 
             if *is_loading {
                 log::info!("Transaction is already in progress");
@@ -289,10 +342,8 @@ pub fn admin_panel() -> Html {
             status_icon_id.set(IconId::FontAwesomeRegularHourglass);
 
             wasm_bindgen_futures::spawn_local(async move {
-                let config_borrowed = config.borrow().clone();
-
                 match transaction::sc_setup(
-                    &config_borrowed,
+                    &context,
                     ping_amount,
                     max_funds,
                     activation_timestamp,
@@ -301,12 +352,29 @@ pub fn admin_panel() -> Html {
                 .await
                 {
                     Ok(result) => {
-                        let new_addr = result["address"].as_str().unwrap().to_string();
-                        setup_result.set(new_addr.clone());
-                        set_contract_address.emit(new_addr);
                         tx_status_modal_visible.set(true);
-                        tx_status.set("Success".to_string());
-                        status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
+                        match result["code"].as_str() {
+                            Some("0") => {
+                                let new_addr = result["address"].as_str().unwrap().to_string();
+                                setup_result.set(new_addr.clone());
+                                tx_status.set("Success".to_string());
+                                status_icon_id.set(IconId::FontAwesomeSolidCircleCheck);
+                                log::info!("SC Setup successful");
+                            }
+                            Some(_) => {
+                                tx_status.set("Failed".to_string());
+                                status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
+                                log::error!(
+                                    "SC Setup failed because: {:?}",
+                                    result["message"].as_str().unwrap()
+                                );
+                            }
+                            None => {
+                                tx_status.set("Failed".to_string());
+                                status_icon_id.set(IconId::FontAwesomeRegularCircleXmark);
+                                log::error!("SC Setup failed with no code");
+                            }
+                        }
                     }
                     Err(err) => {
                         log::error!("SC Setup failed: {:?}", err);

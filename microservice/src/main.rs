@@ -2,7 +2,7 @@ use actix_cors::Cors;
 use actix_web::{web, App, HttpServer};
 use dotenv::dotenv;
 use redis::Client;
-use routes::{query_configuration, setup_configuration};
+use routes::query_configuration;
 use std::env;
 mod routes;
 
@@ -34,7 +34,6 @@ async fn main() -> std::io::Result<()> {
                     .supports_credentials(),
             )
             .app_data(web::Data::new(redis_client.clone()))
-            .service(web::scope("/setup").configure(setup_configuration))
             .service(web::scope("/query").configure(query_configuration))
     })
     .bind("127.0.0.1:8088")?

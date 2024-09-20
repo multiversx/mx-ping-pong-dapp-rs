@@ -36,15 +36,14 @@ impl Interactor {
         let mut transaction = self.sc_deploy_to_blockchain_tx(sc_deploy_step);
         self.set_nonce_and_sign_tx(sender_address, &mut transaction)
             .await;
-        let tx_hash = self
-            .proxy
-            .send_transaction(&transaction)
-            .await
-            .expect("error sending tx (possible API failure)");
-        println!("sc deploy tx hash: {tx_hash}");
-        info!("sc deploy tx hash: {}", tx_hash);
+        let res = self.proxy.send_transaction(&transaction);
+        // .await
+        // .expect("error sending tx (possible API failure)");
+        // println!("sc deploy tx hash: {tx_hash}");
+        // info!("sc deploy tx hash: {}", tx_hash);
 
-        tx_hash
+        // tx_hash
+        res
     }
 
     pub async fn sc_deploy<S>(&mut self, mut sc_deploy_step: S)

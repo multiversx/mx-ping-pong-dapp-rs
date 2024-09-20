@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-gloo-timers = "0.3.0"
 console_log = "0.2"
 log = "0.4"
 serde = { version = "1.0.210", features = ["derive"] }

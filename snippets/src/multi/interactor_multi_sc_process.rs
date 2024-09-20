@@ -20,21 +20,19 @@ impl Interactor {
         }
     }
 
-    pub(crate) async fn process_txs(&mut self, txs: Vec<Transaction>) -> Vec<TransactionOnNetwork> {
-        let mut futures = Vec::new();
+    pub(crate) async fn process_txs(&mut self, txs: Vec<Transaction>) {
+        // let mut futures = Vec::new();
 
         for tx in &txs {
-            let tx_hash = self
-                .proxy
-                .send_transaction(tx)
-                .await
-                .expect("failed to send transaction");
+            let tx_hash = self.proxy.send_transaction(tx);
+            // .await
+            // .expect("failed to send transaction");
 
-            println!("process tx hash: {tx_hash} with nonce: {}", tx.nonce);
-            futures.push(self.proxy.retrieve_tx_on_network(tx_hash.clone()));
+            // println!("process tx hash: {tx_hash} with nonce: {}", tx.nonce);
+            // futures.push(self.proxy.retrieve_tx_on_network(tx_hash.clone()));
         }
 
-        join_all(futures).await
+        // join_all(futures).await
     }
 }
 

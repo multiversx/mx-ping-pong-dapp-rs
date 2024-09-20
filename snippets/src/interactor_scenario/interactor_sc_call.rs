@@ -37,9 +37,9 @@ impl Interactor {
         let mut transaction = self.tx_call_to_blockchain_tx(&sc_call_step.tx);
         self.set_nonce_and_sign_tx(sender_address, &mut transaction)
             .await;
-        let tx_hash = self.proxy.send_transaction(&transaction).await.unwrap();
-        println!("sc call tx hash: {tx_hash}");
-        info!("sc call tx hash: {}", tx_hash);
+        let tx_hash = self.proxy.send_transaction(&transaction);
+        // println!("sc call tx hash: {tx_hash}");
+        // info!("sc call tx hash: {}", tx_hash);
 
         tx_hash
     }

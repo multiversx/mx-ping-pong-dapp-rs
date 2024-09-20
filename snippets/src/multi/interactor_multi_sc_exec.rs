@@ -3,27 +3,27 @@ use crate::{network_response, Interactor, InteractorStep, StepBuffer};
 use multiversx_my_sdk::data::transaction::Transaction;
 
 impl Interactor {
-    pub async fn multi_sc_exec(&mut self, mut buffer: StepBuffer<'_>) {
-        for step in buffer.refs.iter_mut() {
-            step.run_step(&mut self.pre_runners);
-        }
+    // pub async fn multi_sc_exec(&mut self, mut buffer: StepBuffer<'_>) {
+    //     for step in buffer.refs.iter_mut() {
+    //         step.run_step(&mut self.pre_runners);
+    //     }
 
-        let senders = retrieve_senders(buffer.refs.as_slice());
-        self.recall_senders_nonce(senders).await;
+    //     let senders = retrieve_senders(buffer.refs.as_slice());
+    //     self.recall_senders_nonce(senders).await;
 
-        let txs = self.retrieve_txs(&mut buffer);
-        let results = self.process_txs(txs).await;
+    //     let txs = self.retrieve_txs(&mut buffer);
+    //     let results = self.process_txs(txs).await;
 
-        for (i, sc_call_step) in buffer.refs.iter_mut().enumerate() {
-            sc_call_step.set_response(network_response::parse_tx_response(
-                results.get(i).unwrap().clone(),
-            ));
-        }
+    //     for (i, sc_call_step) in buffer.refs.iter_mut().enumerate() {
+    //         sc_call_step.set_response(network_response::parse_tx_response(
+    //             results.get(i).unwrap().clone(),
+    //         ));
+    //     }
 
-        for step in buffer.refs.iter_mut() {
-            step.run_step(&mut self.post_runners);
-        }
-    }
+    //     for step in buffer.refs.iter_mut() {
+    //         step.run_step(&mut self.post_runners);
+    //     }
+    // }
 
     fn retrieve_txs(&mut self, buffer: &mut StepBuffer<'_>) -> Vec<Transaction> {
         let mut txs = Txs::new();
