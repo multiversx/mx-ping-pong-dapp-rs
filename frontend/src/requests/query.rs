@@ -1,8 +1,6 @@
-use serde_json::Value;
+use crate::{config::Config, requests::ApiResponse};
 
-use crate::config::Config;
-
-use super::request;
+use super::{request, ContractState};
 
 pub enum QueryType {
     Deadline,
@@ -12,50 +10,37 @@ pub enum QueryType {
     UserAddresses,
 }
 
-pub async fn get_deadline(config: &Config) -> Result<Value, Value> {
-    let query_url = &config.query_url;
-    let dest = &config.dest;
-    let endpoint = format!("http://{dest}{query_url}");
-
-    request::get_request("deadline", &endpoint).await
-}
-
-pub async fn get_timestamp(config: &Config) -> Result<Value, Value> {
-    let query_url = &config.query_url;
-    let dest = &config.dest;
-    let endpoint = format!("http://{dest}{query_url}");
-
-    request::get_request("timestamp", &endpoint).await
-}
-
-pub async fn get_max_funds(config: &Config) -> Result<Value, Value> {
-    let query_url = &config.query_url;
-    let dest = &config.dest;
-    let endpoint = format!("http://{dest}{query_url}");
-
-    request::get_request("max_funds", &endpoint).await
-}
-
-pub async fn get_ping_amount(config: &Config) -> Result<Value, Value> {
-    let query_url = &config.query_url;
-    let dest = &config.dest;
-    let endpoint = format!("http://{dest}{query_url}");
-
-    request::get_request("ping_amount", &endpoint).await
-}
-
-pub async fn get_user_addresses(config: &Config) -> Result<Value, Value> {
-    let query_url = &config.query_url;
-    let dest = &config.dest;
-    let endpoint = format!("http://{dest}{query_url}");
-
-    request::get_request("user_addresses", &endpoint).await
-}
-
-pub async fn get_contract_addr(config: &Config) -> Result<Value, Value> {
+pub async fn get_contract_addr(config: &Config) -> Result<String, String> {
     let setup_url = &config.setup_url;
     let dest = &config.dest;
     let endpoint = format!("http://{dest}{setup_url}");
 
-    request::get_request("contract_address", &endpoint).await
+    let response = request::get_request("contract_address", &endpoint).await;
+
+    match response {
+        Ok(value) => match serde_json::from_value::<ApiResponse<String>>(value) {
+            Ok(deserialized_value) => Ok(deserialized_value.response),
+            Err(e) => Err(e.to_string()),
+        },
+        Err(err) => Err(err.to_string()),
+    }
+}
+
+pub async fn get_contract_state(config: &Config) -> Result<ContractState, String> {
+    let query_url = &config.query_url;
+    let dest = &config.dest;
+    let endpoint = format!("http://{dest}{query_url}");
+
+    let response = request::get_request("contract_state", &endpoint).await;
+
+    match response {
+        Ok(value) => match serde_json::from_value::<ApiResponse<ContractState>>(value) {
+            Ok(deserialized_value) => {
+                log::info!("{deserialized_value:?}");
+                Ok(deserialized_value.response)
+            }
+            Err(e) => Err(e.to_string()),
+        },
+        Err(err) => Err(err.to_string()),
+    }
 }

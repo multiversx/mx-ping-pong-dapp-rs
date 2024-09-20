@@ -5,12 +5,16 @@ use yew_icons::IconId;
 use crate::{
     components::{Button, ContractAddressModal, TxStatusModal},
     context::ConfigContext,
-    requests::{query, transaction},
+    requests::{query::QueryType, transaction::{self, TransactionType}},
 };
 
 #[function_component(AdminPanel)]
 pub fn admin_panel() -> Html {
     let context = use_context::<ConfigContext>().expect("Failed to get config context");
+    let show_deadline = use_state(bool::default);
+    let show_timestamp = use_state(bool::default);
+    let show_max_funds = use_state(bool::default);
+    let show_ping_amount = use_state(bool::default);
 
     let setup_result = use_state(String::new);
     let transaction_result = use_state(String::new);
@@ -22,64 +26,60 @@ pub fn admin_panel() -> Html {
     let addr_modal_arrow_id = use_state(|| IconId::LucideMaximize2);
     let is_loading: UseStateHandle<bool> = use_state(|| false);
 
-    let deadline_query_response_content = use_state(String::new);
-    let timestamp_query_response_content = use_state(String::new);
-    let max_funds_query_response_content = use_state(String::new);
-    let ping_amount_query_response_content = use_state(String::new);
-
     let query_service = {
         let config = Rc::clone(&context.config);
         let user_address = user_addresses_result.clone();
-        let deadline_query_response_content = deadline_query_response_content.clone();
-        let timestamp_query_response_content = timestamp_query_response_content.clone();
-        let max_funds_query_response_content = max_funds_query_response_content.clone();
-        let ping_amount_query_response_content = ping_amount_query_response_content.clone();
+        let show_deadline = show_deadline.clone();
+        let show_timestamp = show_timestamp.clone();
+        let show_max_funds = show_max_funds.clone();
+        let show_ping_amount = show_ping_amount.clone();
         let context = context.clone();
 
-        Callback::from(move |query_type: query::QueryType| {
+        Callback::from(move |query_type: QueryType| {
             let config = Rc::clone(&config);
             let set_user_address = user_address.clone();
-            let deadline_query_response_content = deadline_query_response_content.clone();
-            let timestamp_query_response_content = timestamp_query_response_content.clone();
-            let max_funds_query_response_content = max_funds_query_response_content.clone();
-            let ping_amount_query_response_content = ping_amount_query_response_content.clone();
+            let show_deadline = show_deadline.clone();
+            let show_timestamp = show_timestamp.clone();
+            let show_max_funds = show_max_funds.clone();
+            let show_ping_amount = show_ping_amount.clone();
             let context = context.clone();
-
+    
             wasm_bindgen_futures::spawn_local(async move {
                 let config_borrowed = config.borrow().clone();
-
+    
                 match query_type {
-                    query::QueryType::Deadline => {
-                        deadline_query_response_content.set(context.deadline.clone());
+                    QueryType::Deadline => {
+                        show_deadline.set(true);
                     }
-                    query::QueryType::Timestamp => {
-                        timestamp_query_response_content.set(context.timestamp.clone());
+                    QueryType::Timestamp => {
+                        show_timestamp.set(true);
                     }
-                    query::QueryType::MaxFunds => {
-                        max_funds_query_response_content.set(context.max_funds.clone());
+                    QueryType::MaxFunds => {
+                        show_max_funds.set(true);
                     }
-                    query::QueryType::PingAmount => {
-                        ping_amount_query_response_content.set(context.ping_amount.clone());
+                    QueryType::PingAmount => {
+                        show_ping_amount.set(true);
                     }
-                    query::QueryType::UserAddresses => {
-                        match query::get_user_addresses(&config_borrowed).await {
-                            Ok(result) => {
-                                if let Some(addresses) = result["response"].as_array() {
-                                    let formatted_addresses = addresses
-                                        .iter()
-                                        .filter_map(|address| address.as_str())
-                                        .collect::<Vec<_>>()
-                                        .join("\n");
-                                    set_user_address.set(formatted_addresses);
-                                } else {
-                                    log::error!("'response' field is not an array or is missing.");
-                                }
-                            }
-                            Err(err) => {
-                                log::error!("Query failed for user addresses: {:?}", err);
-                            }
-                        }
-                    }
+                    QueryType::UserAddresses => {
+                        todo!()
+                    } //     match query::get_user_addresses(&config_borrowed).await {
+                      //         Ok(result) => {
+                      //             if let Some(addresses) = result["response"].as_array() {
+                      //                 let formatted_addresses = addresses
+                      //                     .iter()
+                      //                     .filter_map(|address| address.as_str())
+                      //                     .collect::<Vec<_>>()
+                      //                     .join("\n");
+                      //                 set_user_address.set(formatted_addresses);
+                      //             } else {
+                      //                 log::error!("'response' field is not an array or is missing.");
+                      //             }
+                      //         }
+                      //         Err(err) => {
+                      //             log::error!("Query failed for user addresses: {:?}", err);
+                      //         }
+                      //     }
+                      // }
                 }
             });
         })
@@ -117,7 +117,7 @@ pub fn admin_panel() -> Html {
                 let config_borrowed = config.borrow().clone();
 
                 match tx_type {
-                    transaction::TransactionType::Ping => {
+                    TransactionType::Ping => {
                         match transaction::ping(&config_borrowed).await {
                             Ok(result) => {
                                 transaction_result.set(format!(
@@ -137,7 +137,7 @@ pub fn admin_panel() -> Html {
                             }
                         }
                     }
-                    transaction::TransactionType::Pong => {
+                    TransactionType::Pong => {
                         match transaction::pong(&config_borrowed).await {
                             Ok(_result) => {
                                 transaction_result.set("Ponged successfully".to_string());
@@ -154,7 +154,7 @@ pub fn admin_panel() -> Html {
                             }
                         }
                     }
-                    transaction::TransactionType::PongAll => {
+                    TransactionType::PongAll => {
                         match transaction::pong_all(&config_borrowed).await {
                             Ok(_result) => {
                                 transaction_result.set("Ponged all successfully".to_string());
@@ -265,24 +265,24 @@ pub fn admin_panel() -> Html {
         <h2>{"Ping Pong Admin Panel"}</h2>
         <div class = "admin-panel-btns">
             <div class = "query-btns">
-                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| query::QueryType::Deadline)} text_content={"Deadline".to_string()} />
-                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| query::QueryType::Timestamp)} text_content={"Timestamp".to_string()} />
-                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| query::QueryType::MaxFunds)} text_content={"Max Funds".to_string()} />
-                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| query::QueryType::PingAmount)} text_content={"Ping Amount".to_string()} />
-                <Button class_name = "query-btn" button_type="button" on_click={query_service.reform(|_| query::QueryType::UserAddresses)} text_content={"User Addresses".to_string()} />
+                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::Deadline)} text_content={"Deadline".to_string()} />
+                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::Timestamp)} text_content={"Timestamp".to_string()} />
+                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::MaxFunds)} text_content={"Max Funds".to_string()} />
+                <Button class_name = "query-btn" button_type = "button" on_click={query_service.reform(|_| QueryType::PingAmount)} text_content={"Ping Amount".to_string()} />
+                <Button class_name = "query-btn" button_type="button" on_click={query_service.reform(|_| QueryType::UserAddresses)} text_content={"User Addresses".to_string()} />
             </div>
             <div class = "transaction-btns">
-                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| transaction::TransactionType::Ping)} disabled={*is_loading} text_content={"Ping".to_string()} />
-                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| transaction::TransactionType::Pong)} disabled={*is_loading} text_content={"Pong".to_string()} />
-                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| transaction::TransactionType::PongAll)} disabled={*is_loading} text_content={"PongAll".to_string()} />
+                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Ping)} disabled={*is_loading} text_content={"Ping".to_string()} />
+                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::Pong)} disabled={*is_loading} text_content={"Pong".to_string()} />
+                <Button class_name = "transaction-btn" button_type = "button" on_click={transaction_service.reform(|_| TransactionType::PongAll)} disabled={*is_loading} text_content={"PongAll".to_string()} />
                 <Button class_name = "transaction-btn" button_type = "button" on_click={sc_setup_service.clone()} disabled={*is_loading} text_content={"SC Setup".to_string()} />
             </div>
         </div>
             {
-                if !context.deadline.is_empty() {
+                if *show_deadline {
                     html! {
                         <>
-                            <p>{ (*deadline_query_response_content).clone() }</p>
+                            <p>{ &context.contract_state.deadline }</p>
                         </>
                     }
                 }
@@ -291,10 +291,10 @@ pub fn admin_panel() -> Html {
                 }
             }
             {
-                if !context.timestamp.is_empty() {
+                if *show_timestamp {
                     html! {
                         <>
-                            <p>{ (*timestamp_query_response_content).clone() }</p>
+                            <p>{ &context.contract_state.activation_timestamp }</p>
                         </>
                     }
                 }
@@ -303,10 +303,10 @@ pub fn admin_panel() -> Html {
                 }
             }
             {
-                if !context.max_funds.is_empty() {
+                if *show_max_funds {
                     html! {
                         <>
-                            <p>{ (*max_funds_query_response_content).clone() }</p>
+                            <p>{ &context.contract_state.max_funds.unwrap_or("Max Funds limit not imposed.".to_string()) }</p>
                         </>
                     }
                 }
@@ -315,10 +315,10 @@ pub fn admin_panel() -> Html {
                 }
             }
             {
-                if !context.ping_amount.is_empty() {
+                if *show_ping_amount {
                     html! {
                         <>
-                            <p>{ (*ping_amount_query_response_content).clone() }</p>
+                            <p>{ &context.contract_state.ping_amount }</p>
                         </>
                     }
                 }

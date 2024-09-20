@@ -6,7 +6,10 @@ use interactor::ContractInteract;
 use multiversx_sc_snippets::imports::RustBigUint;
 use redis::{AsyncCommands, Client};
 
-use crate::routes::{proxy, tx_models::*};
+use crate::routes::{
+    model::{PingReqBody, PingResponse, SuccessTxResponse},
+    proxy,
+};
 use multiversx_sc_snippets::*;
 
 #[post("/ping")]

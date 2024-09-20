@@ -1,4 +1,4 @@
-use crate::routes::helpers::{denominate, nominated_str};
+use crate::helpers::{denominate, nominated_str};
 use actix_web::HttpResponse;
 use multiversx_sc_snippets::imports::RustBigUint;
 use serde::{Deserialize, Serialize};

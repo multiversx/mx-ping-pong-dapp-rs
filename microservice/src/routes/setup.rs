@@ -1,3 +1,5 @@
+use std::env;
+use dotenv::dotenv;
 use std::str::FromStr;
 
 use actix_web::{get, post, Responder};
@@ -6,8 +8,8 @@ use imports::{bech32, Bech32Address, BigUint, OptionalValue, ReturnsNewAddress, 
 use interactor::ContractInteract;
 use serde_json::json;
 
+use crate::routes::model::{DeployReqBody, DeployResponse};
 use crate::routes::proxy;
-use crate::routes::tx_models::*;
 use multiversx_sc_snippets::*;
 use redis::Client;
 
@@ -71,9 +73,10 @@ pub async fn setup_contract(
 #[get("/contract_address")]
 pub async fn get_contract_address() -> impl Responder {
     let contract_interact = ContractInteract::new().await;
+    dotenv().ok();
 
     HttpResponse::Ok()
-        .json(json!({"contract_address": contract_interact.state.current_address().to_string()}))
+        .json(json!({"contract_address": env::var("CONTRACT_ADDRESS").unwrap().to_string()}))
 }
 
 pub fn setup_configuration(cfg: &mut web::ServiceConfig) {

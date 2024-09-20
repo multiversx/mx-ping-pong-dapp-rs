@@ -17,9 +17,7 @@ pub async fn get_request(name: &str, endpoint: &str) -> Result<Value, Value> {
             .map_err(|err| format!("Failed to read response body: {:?}", err))?;
         Ok(body)
     } else {
-        Err(json!({
-            "error": format!("Server error: {:?}", response.status())
-        }))
+        Err(json!(format!("Server error: {:?}", response.status())))
     }
 }
 
