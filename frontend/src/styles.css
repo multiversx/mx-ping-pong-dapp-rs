@@ -1,0 +1,80 @@
+* {
+  font-family: monospace;
+}
+
+.footer {
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 20px 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  font-size: 14px;
+}
+
+.icon {
+  width: 15px;
+  height: 15px;
+}
+
+.admin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.admin-panel-btns {
+  display: flex;
+  flex-direction: row;
+  padding: 5px 5px;
+  justify-content: space-between;
+  gap: 5px;
+}
+
+.query-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, box-shadow 0.3s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.query-btn:hover {
+  background-color: #45a049;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.query-btn:active {
+  background-color: #3e8e41;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: scale(0.98);
+}
+
+.transaction-btn {
+  background-color: #6f4caf;
+  color: white;
+  padding: 12px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, box-shadow 0.3s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.transaction-btn:hover {
+  background-color: #a0457a;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.transaction-btn:active {
+  background-color: #7d3e8e;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: scale(0.98);
+}

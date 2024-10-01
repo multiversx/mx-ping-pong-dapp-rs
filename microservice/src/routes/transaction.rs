@@ -1,27 +1,28 @@
-use actix_web::{post, web, Responder};
-use imports::{IgnoreValue, ReturnsRawResult};
+use std::str::FromStr;
 
-use crate::routes::proxy;
-use crate::shared_state::AppState;
+use actix_web::{post, web, Responder};
+use imports::{BigUint, IgnoreValue};
+use interactor::ContractInteract;
+use multiversx_sc_snippets::imports::RustBigUint;
+use redis::{AsyncCommands, Client};
+
+use crate::routes::{
+    model::{PingReqBody, PingResponse, SuccessTxResponse},
+    proxy,
+};
 use multiversx_sc_snippets::*;
 
-#[post("/transaction")]
-pub async fn ping(data: web::Data<AppState>) -> impl Responder {
-    // get a mutable lock on the contract_interact (entire struct)
-    let mut contract_interact = match data.interactor.write() {
-        Ok(lock) => lock,
-        Err(poisoned) => {
-            // log the error
-            return format!("Failed to acquire lock: {:?}", poisoned);
-        }
-    };
+#[post("/ping")]
+pub async fn ping(body: web::Json<PingReqBody>, redis_client: web::Data<Client>) -> impl Responder {
+    let mut contract_interact = ContractInteract::new().await;
+    let amount = body.get_denominated_amount();
+    let amount_numeric = RustBigUint::from_str(&amount).unwrap();
+
     let wallet_address = contract_interact.wallet_address.clone();
     let current_address = contract_interact.state.current_address().clone();
-    let ping_amount = 5u64;
     let _data = IgnoreValue;
 
-    // access both interactor and state through the mutable borrow
-    let response = contract_interact
+    contract_interact
         .interactor
         .tx()
         .from(wallet_address)
@@ -29,14 +30,64 @@ pub async fn ping(data: web::Data<AppState>) -> impl Responder {
         .gas(30_000_000u64)
         .typed(proxy::PingPongProxy)
         .ping(_data)
-        .egld(ping_amount)
-        .returns(ReturnsRawResult)
+        .egld(BigUint::from(&amount_numeric))
         .prepare_async()
         .run()
         .await;
 
-    format!(
-        "successfully pinged with amount {:#?}: {:?}",
-        ping_amount, response
-    )
+    let mut con = redis_client
+        .get_multiplexed_async_connection()
+        .await
+        .unwrap();
+
+    let _: () = con.del("user_addresses").await.unwrap();
+
+    PingResponse::new("ok".to_string(), amount_numeric).response()
+}
+
+#[post("/pong")]
+pub async fn pong() -> impl Responder {
+    let mut contract_interact = ContractInteract::new().await;
+
+    let wallet_address = contract_interact.wallet_address.clone();
+    let current_address = contract_interact.state.current_address().clone();
+
+    contract_interact
+        .interactor
+        .tx()
+        .from(wallet_address)
+        .to(current_address)
+        .gas(30_000_000u64)
+        .typed(proxy::PingPongProxy)
+        .pong()
+        .prepare_async()
+        .run()
+        .await;
+
+    SuccessTxResponse::new("ok".to_string()).response()
+}
+
+#[post("/pong_all")]
+pub async fn pong_all() -> impl Responder {
+    let mut contract_interact = ContractInteract::new().await;
+    let wallet_address = contract_interact.wallet_address.clone();
+    let current_address = contract_interact.state.current_address().clone();
+
+    contract_interact
+        .interactor
+        .tx()
+        .from(wallet_address)
+        .to(current_address)
+        .gas(30_000_000u64)
+        .typed(proxy::PingPongProxy)
+        .pong_all()
+        .prepare_async()
+        .run()
+        .await;
+
+    SuccessTxResponse::new("ok".to_string()).response()
+}
+
+pub fn tx_configuration(cfg: &mut web::ServiceConfig) {
+    cfg.service(ping).service(pong).service(pong_all);
 }

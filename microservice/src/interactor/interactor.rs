@@ -1,14 +1,11 @@
-use std::{
-    io::{Read, Write},
-    path::Path,
-};
+use std::{env, io::Write};
 
 use imports::{Address, Bech32Address, BytesValue, InterpretableFrom, InterpreterContext};
 use multiversx_sc_snippets::*;
 use serde::{Deserialize, Serialize};
 
 const GATEWAY: &str = sdk::gateway::DEVNET_GATEWAY;
-const STATE_FILE: &str = "src/shared_state/state.toml";
+const ENV_FILE: &str = ".env";
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct State {
@@ -18,13 +15,12 @@ pub struct State {
 impl State {
     // Deserializes state from file
     pub fn load_state() -> Self {
-        if Path::new(STATE_FILE).exists() {
-            let mut file = std::fs::File::open(STATE_FILE).unwrap();
-            let mut content = String::new();
-            file.read_to_string(&mut content).unwrap();
-            toml::from_str(&content).unwrap()
+        if let Ok(contract_address_str) = env::var("CONTRACT_ADDRESS") {
+            Self {
+                contract_address: Some(Bech32Address::from_bech32_string(contract_address_str)),
+            }
         } else {
-            println!("state file not found");
+            println!("No contract address found in env");
             Self::default()
         }
     }
@@ -45,10 +41,29 @@ impl State {
 impl Drop for State {
     // Serializes state to file
     fn drop(&mut self) {
-        let mut file = std::fs::File::create(STATE_FILE).unwrap();
-        file.write_all(toml::to_string(self).unwrap().as_bytes())
-            .unwrap();
+        if let Some(address) = &self.contract_address {
+            update_env_variable(ENV_FILE, "CONTRACT_ADDRESS", address.to_bech32_str());
+        }
     }
+}
+
+fn update_env_variable(file_path: &str, key: &str, new_value: &str) {
+    let content = std::fs::read_to_string(file_path).unwrap();
+
+    let updated_content = content
+        .lines()
+        .map(|line| {
+            if line.starts_with(key) {
+                format!("{}={}", key, new_value)
+            } else {
+                line.to_string()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    let mut file = std::fs::File::create(file_path).unwrap();
+    file.write_all(updated_content.as_bytes()).unwrap();
 }
 
 pub struct ContractInteract {
@@ -64,7 +79,7 @@ impl ContractInteract {
         let wallet_address = interactor.register_wallet(test_wallets::alice());
 
         let contract_code = BytesValue::interpret_from(
-            "mxsc:src/shared_state/ping-pong-egld.mxsc.json",
+            "mxsc:microservice/ping-pong-egld.mxsc.json",
             &InterpreterContext::default(),
         );
 
